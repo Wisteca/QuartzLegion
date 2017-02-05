@@ -64,10 +64,19 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 		}
 	}
 	
+	/**
+	 * Construire un objet en le déserializant
+	 * @param element
+	 */
+	
 	public PassivePersonnage(Element element)
 	{
 		deserialize(element);
 	}
+	
+	/**
+	 * @return l'uuid de l'entité
+	 */
 	
 	@Override
 	public UUID getUniqueId()
