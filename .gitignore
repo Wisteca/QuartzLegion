@@ -1,0 +1,13 @@
+gradle/wrapper/gradle-wrapper.properties
+gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
+*.class
+.classpath
+.gradle/3.3/taskArtifacts/taskArtifacts.lock
+*.bin
+.settings/org.eclipse.buildship.core.prefs
+bin/com/wisteca/quartzlegion/data/passivePersonnageExample.xml
+*.xml
+bin/com/wisteca/quartzlegion/entities/personnages/Entities.zargo
+*.zargo~

@@ -1,0 +1,15 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+ext {
+	spigotVersion = '1.11.2-R0.1-SNAPSHOT'
+}
+
+repositories {
+    mavenLocal()
+}
+
+dependencies {
+	compile "org.spigotmc:spigot-api:$spigotVersion"
+	compile "org.bukkit:craftbukkit:$spigotVersion"
+}
