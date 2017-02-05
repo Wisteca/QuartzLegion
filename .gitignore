@@ -1,9 +1,6 @@
-gradle/wrapper/gradle-wrapper.properties
-gradle/wrapper/gradle-wrapper.jar
-gradlew
-gradlew.bat
 *.class
 .classpath
+.project
 .gradle/3.3/taskArtifacts/taskArtifacts.lock
 *.bin
 .settings/org.eclipse.buildship.core.prefs
