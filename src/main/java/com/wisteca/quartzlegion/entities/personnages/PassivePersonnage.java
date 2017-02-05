@@ -16,6 +16,12 @@ import com.wisteca.quartzlegion.entities.personnages.Personnage.Race;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 
+/**
+ * 
+ * @author Wisteca
+ *
+ */
+
 public abstract class PassivePersonnage implements Entity, Serializer {
 	
 	private Weapon[] myWeapons = new Weapon[3];
@@ -23,6 +29,15 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	private Race myRace;
 	private Classe myClasse;
 	private UUID myUniqueId;
+	
+	/**
+	 * Construire un objet en spécifiant chaque paramètres
+	 * @param race
+	 * @param classe
+	 * @param uniqueId
+	 * @param weapons
+	 * @param armors
+	 */
 	
 	public PassivePersonnage(Race race, Classe classe, UUID uniqueId, Weapon[] weapons, Armor[] armors)
 	{
