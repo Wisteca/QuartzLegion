@@ -17,9 +17,8 @@ import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 
 /**
- * 
+ * Classe de base de chaques entités, représente une entité décorative et incapable de se battre
  * @author Wisteca
- *
  */
 
 public abstract class PassivePersonnage implements Entity, Serializer {
@@ -32,11 +31,11 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	
 	/**
 	 * Construire un objet en spécifiant chaque paramètres
-	 * @param race
-	 * @param classe
-	 * @param uniqueId
-	 * @param weapons
-	 * @param armors
+	 * @param race race du personnage
+	 * @param classe classe du personnage
+	 * @param uniqueId uuid du personnage
+	 * @param weapons armes du personnage
+	 * @param armors armures du personnage
 	 */
 	
 	public PassivePersonnage(Race race, Classe classe, UUID uniqueId, Weapon[] weapons, Armor[] armors)
@@ -84,21 +83,37 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 		return myUniqueId;
 	}
 	
+	/**
+	 * @return la race de l'entité
+	 * @see Race
+	 */
+	
 	public Race getRace()
 	{
 		return myRace;
 	}
+	
+	/**
+	 * @return la classe de l'entité
+	 * @see Classe
+	 */
 	
 	public Classe getClasse()
 	{
 		return myClasse;
 	}
 	
+	/**
+	 * @param slot le slot où l'armure doit être placée
+	 * @param armor l'armure à placer dans ce slot
+	 * @throws ArrayIndexOutOfBoundsException si le slot est plus petit que 0 ou supérieur à 3
+	 */
+	
 	public void setArmor(int slot, Armor armor)
 	{
 		myArmors[slot] = armor;
 	}
-	
+	// continuer la doc
 	public Armor getArmor(int slot)
 	{
 		return slot > 4 ? null : myArmors[slot];
