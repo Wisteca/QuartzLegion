@@ -31,7 +31,7 @@ public class Joueur extends Personnage {
 	
 	public Joueur(UUID uuid, Race race, Classe classe, Player player)
 	{
-		super(uuid, race, classe, null, null, null, null, 0);
+		super(uuid, race, classe, null, null, null, null, 0, 0);
 		
 		
 	}

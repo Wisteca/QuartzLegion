@@ -15,12 +15,17 @@ import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
 
 public class PersonnageManager implements Listener {
 	
-	/*
-	 * Singletone qui gère les personnages
+	/**
+	 * Singletone qui contient tous les personnages et qui se charge d'appeler leurs événements
+	 * @author Wisteca
 	 */
 	
 	private static PersonnageManager myInstance;
 	private HashMap<UUID, PassivePersonnage> myPersonnages = new HashMap<>();
+	
+	/**
+	 * l'instance est construite au démarrage du plugin, ne pas appeler le constructeur
+	 */
 	
 	public PersonnageManager()
 	{
@@ -28,20 +33,39 @@ public class PersonnageManager implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, MainClass.getInstance());
 	}
 	
+	/**
+	 * les personnages s'ajoutent automatiquement à leur construction
+	 * @param perso le personnage en question
+	 */
+	
 	public void addPersonnage(PassivePersonnage perso)
 	{
 		myPersonnages.put(perso.getUniqueId(), perso);
 	}
+	
+	/**
+	 * supprimer un personnage de la liste, appeler automatiquement
+	 * @param uuid
+	 */
 	
 	public void removePersonnage(UUID uuid)
 	{
 		myPersonnages.remove(uuid);
 	}
 	
+	/**
+	 * @param uuid l'uuid du personnage que l'on souhaite récupérer
+	 * @return le personnage comportant l'uuid spécifié, ou null si il n'existe pas
+	 */
+	
 	public PassivePersonnage getPersonnage(UUID uuid)
 	{
 		return myPersonnages.get(uuid);
 	}
+	
+	/**
+	 * @return l'instamce de PersonnageManager construite au démarrage du plugin
+	 */
 	
 	public static PersonnageManager getInstance()
 	{
@@ -53,12 +77,15 @@ public class PersonnageManager implements Listener {
 		for(PassivePersonnage pp : myPersonnages.values())
 		{
 			if(pp.getUniqueId().equals(entity.getUniqueId()))
+			{
 				pp.onEvent(e);
+				break;
+			}
 		}
 	}
 	
-	/*
-	 * Events
+	/**
+	 * méthode appelé par l'api bukkit lorsqu'un event se déclenche, les personnages seront ensuite itérés et le onEvent du personnage sera appelé
 	 */
 	
 	@EventHandler

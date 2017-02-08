@@ -11,13 +11,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wisteca.quartzlegion.data.Serializer;
+import com.wisteca.quartzlegion.entities.PersonnageManager;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Race;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 
 /**
- * Classe de base de chaques entités, représente une entité décorative et incapable de se battre
+ * Classe de base de chaques entités, représente une entité décorative et incapable de se battre, possède des armes pour la décoration !
  * @author Wisteca
  */
 
@@ -34,8 +35,12 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	 * @param race race du personnage
 	 * @param classe classe du personnage
 	 * @param uniqueId uuid du personnage
-	 * @param weapons armes du personnage
-	 * @param armors armures du personnage
+	 * @param weapons armes du personnage, ce paramètre peut être null
+	 * @param armors armures du personnage, ce paramètre peut être null
+	 * @see Race
+	 * @see Classe
+	 * @see Weapon
+	 * @see Armor
 	 */
 	
 	public PassivePersonnage(Race race, Classe classe, UUID uniqueId, Weapon[] weapons, Armor[] armors)
@@ -61,6 +66,8 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 					myArmors[i] = armors[i];
 			}
 		}
+		
+		PersonnageManager.getInstance().addPersonnage(this);
 	}
 	
 	/**
@@ -71,6 +78,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	public PassivePersonnage(Element element)
 	{
 		deserialize(element);
+		PersonnageManager.getInstance().addPersonnage(this);
 	}
 	
 	/**
@@ -104,7 +112,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	}
 	
 	/**
-	 * @param slot le slot où l'armure doit être placée
+	 * @param slot le slot où l'armure doit être placée, l'index 0 correspond au casque,jusqu'à l'index 3 qui est les bottes
 	 * @param armor l'armure à placer dans ce slot
 	 * @throws ArrayIndexOutOfBoundsException si le slot est plus petit que 0 ou supérieur à 3
 	 */
@@ -113,37 +121,83 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	{
 		myArmors[slot] = armor;
 	}
-	// continuer la doc
+	
+	/**
+	 * @param slot le slot de l'armure
+	 * @return l'armure correspondant au slot spécifié ou null si le personnage n'a pas d'armure dans ce slot
+	 * @throws ArrayIndexOutOfBoundsException si le slot n'est pas compris entre 0 et 3
+	 * @see Armor
+	 */
+	
 	public Armor getArmor(int slot)
 	{
-		return slot > 4 ? null : myArmors[slot];
+		return myArmors[slot];
 	}
+	
+	/**
+	 * @return un tableau de toutes les armures du personnage, en partant de la tête aux pieds, des slots peuvent être null
+	 * @see Armor
+	 */
 	
 	public Armor[] getArmors()
 	{
 		return myArmors;
 	}
 	
+	/**
+	 * @param slot le slot dans lequel l'arme doit être placée, compris entre 0 et 2
+	 * @param weapon l'arme à placer
+	 * @see Weapon
+	 * @throws ArrayIndexOutOfBoundsException si le slot n'est pas compris entre 0 et 2
+	 */
+	
 	public void setWeapon(int slot, Weapon weapon)
 	{
 		myWeapons[slot] = weapon;
 	}
 	
+	/**
+	 * @param slot le slot où aller chercher l'arme
+	 * @return l'arme se trouvant dans le slot ou null si il n'y a pas d'arme dans ce slot
+	 * @throws ArrayIndexOutOfBoundsException si le slot n'est pas compris entre 0 et 2
+	 * @see Weapon
+	 */
+	
 	public Weapon getWeapon(int slot)
 	{
-		return slot > 3 ? null : myWeapons[slot];
+		return myWeapons[slot];
 	}
+	
+	/**
+	 * @return un tableau contenant les 3 armes du personnage, ou null si il n'a pas d'arme
+	 * @see Weapon
+	 */
 	
 	public Weapon[] getWeapons()
 	{
 		return myWeapons;
 	}
 	
+	/**
+	 * méthode appelée automatiquement lorsqu'un événement se déclenche, {@link PersonnageManager} pour voir la liste d'événements
+	 * pour écouter un événement : if(e instanceof PlayerInteractAtEntityEvent) { // on sait que le personnage vient d'interagir avec une entité }
+	 * @param e l'événement en question
+	 */
+	
 	public void onEvent(Event e)
 	{}
 	
+	/**
+	 * méthode appelée chaque ticks (20 fois par secondes), peut être redéfinie pour faire des checks régulier ou autre
+	 * <strong>ne pas appeler cette méthode, cela pourrait fausser des compteurs comme celui des buffs ! elle est appelée chaque ticks dans l'entité NMS du personnage</strong>
+	 */
+	
 	public void doTime()
 	{}
+	
+	/**
+	 * @return la position des yeux de l'entité
+	 */
 	
 	public abstract Location getEyeLocation();
 	

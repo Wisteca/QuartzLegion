@@ -23,7 +23,7 @@ public class IntelligentPersonnage extends Personnage {
 
 	public IntelligentPersonnage(UUID uuid, Race race, Classe classe)
 	{
-		super(uuid, race, classe, null, null, null, null, 0);
+		super(uuid, race, classe, null, null, null, null, 0, 0);
 		
 	}
 

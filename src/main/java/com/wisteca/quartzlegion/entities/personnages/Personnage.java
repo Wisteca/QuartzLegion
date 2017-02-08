@@ -20,16 +20,34 @@ import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.HabilitySkill;
 
+/**
+ * Le personnage est capable de se battre, il peux utiliser ses armes et avoir des pouvoirs.
+ * @author Wisteca
+ */
+
 public abstract class Personnage extends PassivePersonnage {
 
-	protected int myHealth, myEnergy, myLevel;
-	private HashMap<Skill, Integer> mySkills = new HashMap<>();
-	private ArrayList<SpacePouvoir> myCurrentSpacePouvoirs = new ArrayList<>();
-	private AttackPouvoir[] myAttackPouvoirs = new AttackPouvoir[8];
-	private IntelligentPersonnage[] myPets = new IntelligentPersonnage[3];
-	private Personnage mySelectedPersonnage; // non sérializé
+	private int myHealth, myEnergy, myLevel, myCapacity; // vie, énergie, niveau et capacité de stockage des buffs
+	private HashMap<Skill, Integer> mySkills = new HashMap<>(); // skills de base
+	private ArrayList<SpacePouvoir> myCurrentSpacePouvoirs = new ArrayList<>(); // pouvoirs "passifs"
+	private AttackPouvoir[] myAttackPouvoirs = new AttackPouvoir[8]; // pouvoirs d'attaque
+	private IntelligentPersonnage[] myPets = new IntelligentPersonnage[3]; // "animaux" de compagnie
+	private Personnage mySelectedPersonnage; // personnage séléctionné, non sérializé
 	
-	public Personnage(UUID uuid, Race race, Classe classe, Weapon[] weapons, Armor[] armors, HashMap<Skill, Integer> skills, AttackPouvoir[] pouvoirs, int level)
+	/**
+	 * Construire un personnage en spécifiant chaque attributs
+	 * @param uuid l'uuid du personnage
+	 * @param race la race du personnage
+	 * @param classe la classe du personnage
+	 * @param weapons les armes du personnage (peut être null)
+	 * @param armors les armures du personnage (peut être null)
+	 * @param skills les compétences du personnage
+	 * @param pouvoirs les pouvoirs du personnage
+	 * @param level le niveau du personnage
+	 * @param capacity la capacité de stockage des buffs du personnage
+	 */
+	
+	public Personnage(UUID uuid, Race race, Classe classe, Weapon[] weapons, Armor[] armors, HashMap<Skill, Integer> skills, AttackPouvoir[] pouvoirs, int level, int capacity)
 	{
 		super(race, classe, uuid, weapons, armors);
 		
@@ -47,13 +65,24 @@ public abstract class Personnage extends PassivePersonnage {
 		myEnergy = getSkillFix(ClasseSkill.ENERGIE_TOTALE);
 		myAttackPouvoirs = pouvoirs.clone();
 		myLevel = level;
+		myCapacity = capacity;
 	}
+	
+	/**
+	 * Construire un personnage en le déserializant
+	 * @param element l'élément contenant le personnage
+	 */
 	
 	public Personnage(Element element)
 	{
 		super(element);
 		deserialize(element);
 	}
+	
+	/**
+	 * Sérializer un personnage dans l'élément passer en paramètre
+	 * @param toWrite l'élément dans lequel le personnage devra se sérializer
+	 */
 	
 	@Override
 	public void serialize(Element toWrite) throws ParserConfigurationException
@@ -62,6 +91,11 @@ public abstract class Personnage extends PassivePersonnage {
 		super.serialize(toWrite);
 	}
 	
+	/**
+	 * Déserializer un personnage, méthode appelée par le constructeur
+	 * @param element l'élément dans lequel un personnage a été sérializé auparavant
+	 */
+	
 	@Override
 	public void deserialize(Element element)
 	{
@@ -69,11 +103,21 @@ public abstract class Personnage extends PassivePersonnage {
 		super.deserialize(element);
 	}
 	
+	/**
+	 * Changer la vie du personnage (ne prends pas en compte la protection)
+	 * @param health vie en plus ou en moins
+	 */
+	
 	public void changeHealth(int health)
 	{
 		myHealth += health;
 		healthChanged();
 	}
+	
+	/**
+	 * Puisque que tous les personnages n'ont pas la même vie totale, cette méthode permet de choisir un pourcentage de vie.
+	 * @param percent le pourcentage de vie
+	 */
 	
 	public void setHealth(double percent)
 	{
@@ -81,12 +125,25 @@ public abstract class Personnage extends PassivePersonnage {
 		healthChanged();
 	}
 	
+	/**
+	 * @return la vie du personnage
+	 */
+	
 	public double getHealth()
 	{
 		return myHealth;
 	}
 	
+	/**
+	 * Appelé quand la vie du personnage change.
+	 */
+	
 	protected abstract void healthChanged();
+	
+	/**
+	 * Changer l'énergie du personnage
+	 * @param energy l'énergie en plus ou en moins
+	 */
 	
 	public void changeEnergy(int energy)
 	{
@@ -94,18 +151,39 @@ public abstract class Personnage extends PassivePersonnage {
 		energyChanged();
 	}
 	
+	/**
+	 * Définir l'énergie du personnage à un pourcentage.
+	 * @param percent le pourcentage d'énergie
+	 */
+	
 	public void setEnergy(double percent)
 	{
 		myEnergy = (int) Math.floor(percent * (double) getSkillFix(ClasseSkill.ENERGIE_TOTALE));
 		energyChanged();
 	}
 	
+	/**
+	 * @return l'énergie du personnage
+	 */
+	
 	public int getEnergy()
 	{
 		return myEnergy;
 	}
 	
+	/**
+	 * Appelé à chaque fois que l'énergie du personnage change
+	 */
+	
 	protected abstract void energyChanged();
+	
+	/**
+	 * Les compétences "fixes" ne sont pas changées par des pouvoirs ou autre buff. C'est les compétences "nettes".
+	 * @param skill la compétence à changée
+	 * @param value la valeur à ajoutée ou retirée
+	 * @return true si la compétence à été changée, false si la nouvelle valeur est trop grande par rapport au niveau du personnage
+	 * @see Skill pour plus d'infos sur le système de compétences
+	 */
 	
 	public boolean changeSkillFix(Skill skill, int value)
 	{
@@ -118,17 +196,30 @@ public abstract class Personnage extends PassivePersonnage {
 		return false;
 	}
 	
+	/**
+	 * @param skill la compétence à récupérée
+	 * @return la valeur "nette" de la compétence
+	 * @see Skill pour plus d'infos sur le système de compétences
+	 */
+	
 	public int getSkillFix(Skill skill)
 	{
 		return mySkills.get(skill);
 	}
+	
+	/**
+	 * Récupérer une compétence en y additionnant sa dépendance aux compétences d'habilités
+	 * @param skill la compétence à récupérer
+	 * @return la valeur de la compétence (nette) + sa dépendance aux compétences d'habilités
+	 * @see Skill pour plus d'infos sur le système de compétences
+	 */
 	
 	public int getSkillWithDependencies(Skill skill)
 	{
 		if(skill instanceof ClasseSkill)
 		{
 			ClasseSkill cSkill = (ClasseSkill) skill;
-			// calcul des dépendances
+			// calcul des dépendances aux skills d'habilités
 			int ajout = 0;
 			for(HabilitySkill hSkill : HabilitySkill.values())
 				ajout += (int) Math.floor((double) cSkill.getDependencie(hSkill) / 100 * getSkillFix(hSkill));
@@ -139,51 +230,85 @@ public abstract class Personnage extends PassivePersonnage {
 		return getSkillFix(skill);
 	}
 	
+	/**
+	 * Récupérer une compétence temporaire, les compétences temporaires sont calculées en additionnant la compétence nette + sa dépendance aux compétences d'habilités 
+	 * + les pouvoirs qui l'augmentent + les augmentations des armes et armures.
+	 * @param skill la compétence à récupérer
+	 * @return la valeur temporaire de cette compétence
+	 * @see Skill pour plus d'infos sur le système de compétences
+	 */
+	
 	public int getTemporarySkill(Skill skill)
 	{
-		// augmentation
+		// augmentation des buffs
 		int boost = 0;
 		for(SpacePouvoir buff : myCurrentSpacePouvoirs)
 			if(buff instanceof SkillsBuff)
 				boost += ((SkillsBuff) buff).getModification(skill);
 		
-		// dépendance
-		int ajout = 0;
-		if(skill instanceof ClasseSkill)
-		{
-			ClasseSkill cSkill = (ClasseSkill) skill;
-			// calcul des dépendances
-			for(HabilitySkill hSkill : HabilitySkill.values())
-				ajout += (int) Math.floor((double) cSkill.getDependencie(hSkill) / 100 * getTemporarySkill(hSkill));
-		}
+		// augmentation des armures
+		for(Armor a : getArmors())
+			boost += a.getIncrease(skill);
 		
-		return getSkillFix(skill) + boost + ajout;
+		// augmentation des armes
+		for(Weapon w : getWeapons())
+			boost += w.getIncrease(skill);
+		
+		return getTemporarySkill(skill) + boost;
 	}
+	
+	/**
+	 * @param skill la compétence en question
+	 * @return la valeur maximal de cette compétence pour le niveau du personnage
+	 */
 	
 	public int getMaxValue(Skill skill)
 	{
 		return getLevel() * 5; // CHANGERA PAR LA SUITE
 	}
 	
+	/**
+	 * @param level le nouveau niveau du personnage
+	 */
+	
 	public void setLevel(int level)
 	{
 		myLevel = level;
 	}
+	
+	/**
+	 * @return le niveau du personnage
+	 */
 	
 	public int getLevel()
 	{
 		return myLevel;
 	}
 	
+	/**
+	 * Définir un personnage séléctionné par le personnage courant, c'est ce personnage qu'il visera avec ses attaques, cette méthode est généralement appelée automatiquement par ses comportements.
+	 * @param perso le personnage que le personnage courant ciblera
+	 */
+	
 	public void setSelectedPersonnage(Personnage perso)
 	{
 		mySelectedPersonnage = perso;
 	}
 	
+	/**
+	 * @return récupérer le personnage séléctionné par le personnage courant
+	 */
+	
 	public Personnage getSelectedPersonnage()
 	{
 		return mySelectedPersonnage;
 	}
+	
+	/**
+	 * Récupérer la puissance d'attaque du personnage pour un pouvoir donné. Prends en compte les dégâts du pouvoir + ceux de l'arme.
+	 * @param pouvoir le pouvoir utilisé pour attaquer
+	 * @return un objet {@link Damage}
+	 */
 	
 	public Damage getAttackPower(AttackPouvoir pouvoir)
 	{
@@ -191,7 +316,7 @@ public abstract class Personnage extends PassivePersonnage {
 		for(Weapon w : getWeapons())
 			if(w.getWeaponType().equals(pouvoir.getWeaponType()))
 			{
-				currentWeapon = w; // on choisit l'arme du bon type
+				currentWeapon = w; // En sachant qu'un personnage ne peut pas avoir deux armes du même type, currentWeapon est l'arme utilisée pour lancer le pouvoir paramétré.
 				break;
 			}
 		
@@ -200,7 +325,8 @@ public abstract class Personnage extends PassivePersonnage {
 		HashMap<DamageType, Integer> damages = new HashMap<>();
 		for(DamageType type : DamageType.values())
 			damages.put(type, pouvoir.getDamages().get(type) + currentWeapon.getRandomDamages(type));
-			// dégâts = pouvoir + arme
+			
+		// dégâts = pouvoir + arme
 		HashMap<Skill, Integer> skills = new HashMap<>();
 		for(Skill skill : Skill.values())
 			skills.put(skill, getTemporarySkill(skill));
@@ -213,6 +339,12 @@ public abstract class Personnage extends PassivePersonnage {
 		
 		return power;
 	}
+	
+	/**
+	 * Cette méthode est celle qui suit logiquement getAttackPower(), elle inflige au personnage les dégâts en prenant en compte les évitements et la protection.
+	 * @param damage l'objet contenant les informations nécessaires au calcul des dégâts
+	 * @return les dégâts subit
+	 */
 	
 	public int damage(Damage damage)
 	{
@@ -272,6 +404,10 @@ public abstract class Personnage extends PassivePersonnage {
 		return totalDamage;
 	}
 	
+	/**
+	 * @return true si la vie du personnage est égal à 0
+	 */
+	
 	@Override
 	public boolean isDead()
 	{
@@ -283,7 +419,19 @@ public abstract class Personnage extends PassivePersonnage {
 		return new Random().nextInt(getTemporarySkill(skill)) > compare;
 	}
 	
+	/**
+	 * Cette méthode est utilisée pour informer un personnage des dégâts qu'il a fait subir à un autre personnage.
+	 * @param damages les dégâts subits
+	 * @param target le personnage qui a été percuté
+	 */
+	
 	public abstract void damageInfo(int damages, Personnage target);
+	
+	/**
+	 * Récupérer la protection du personnage en fonction de ses armures.
+	 * @param protection le type de dégâts contre lequel le personnage possède une protection
+	 * @return la protection du personnage
+	 */
 	
 	public int getProtection(DamageType protection)
 	{
@@ -294,7 +442,15 @@ public abstract class Personnage extends PassivePersonnage {
 		return moyenne / getArmors().length + getTemporarySkill(ClasseSkill.ARMURE);
 	}
 	
-	public void setPouvoir(int index, AttackPouvoir pouvoir)
+	/**
+	 * Mettre un pouvoir à l'emplacement indexé, pour que le pouvoir puisse être équipé, il faut que le personnage possède une arme du type du pouvoir.
+	 * @param index l'index où placé le pouvoir
+	 * @param pouvoir le pouvoir à placé
+	 * @throws ArrayIndexOutOfBoundsException si l'index n'est pas compris entre 0 et 7
+	 * @return true si le pouvoir à été équipé, false si le personnage n'avait pas l'arme du type requis
+	 */
+	
+	public boolean setPouvoir(int index, AttackPouvoir pouvoir)
 	{
 		for(Weapon w : getWeapons())
 		{
@@ -302,57 +458,144 @@ public abstract class Personnage extends PassivePersonnage {
 				continue;
 			
 			myAttackPouvoirs[index] = pouvoir;
-			return;
+			return true;
 		}
 		
-		sendMessage("Vous n'avez pas l'arme requise pour vous équiper de ce pouvoir.");
+		return false;
 	}
+	
+	/**
+	 * @param index l'index du pouvoir à récupéré
+	 * @return le pouvoir placé à l'index
+	 * @throws ArrayIndexOutOfBoundsException si l'index n'est pas compris entre 0 et 7
+	 */
 	
 	public AttackPouvoir getPouvoir(int index)
 	{
-		return index >= myAttackPouvoirs.length ? null : myAttackPouvoirs[index];
+		return myAttackPouvoirs[index];
 	}
+	
+	/**
+	 * @return une liste des pouvoirs du personnage
+	 */
 	
 	public AttackPouvoir[] getPouvoirs()
 	{
 		return myAttackPouvoirs.clone();
 	}
 	
+	/**
+	 * Mettre un animal de compagnie au personnage
+	 * @param index l'index de l'animal
+	 * @param pet le personnage qui deviendra l'animal de compagnie du personnage
+	 * @throws ArrayIndexOutOfBoundsException si l'index n'est pas compris entre 0 et 2
+	 */
+	
 	public void setPet(int index, IntelligentPersonnage pet)
 	{
-		if(index < myPets.length)
-			myPets[index] = pet;
+		myPets[index] = pet;
 	}
+	
+	/**
+	 * @param index l'index dans lequel l'animal devra être récupérer
+	 * @return l'animal de compagnie du personnage
+	 */
 	
 	public IntelligentPersonnage getPet(int index)
 	{
-		return index < myPets.length ? myPets[index] : null;
+		return myPets[index];
 	}
+	
+	/**
+	 * @return un tableau de animaux de compagnie du personnage
+	 */
 	
 	public IntelligentPersonnage[] getPets()
 	{
 		return myPets.clone();
 	}
 	
-	public void addSpacePouvoir(SpacePouvoir sp)
+	/**
+	 * Ajouter un buff au personnage.
+	 * @param sp le SpacePouvoir à ajouté au personnage
+	 * @return true si le pouvoir à bien été ajouté, false si la capacité du personnage était insuffisante
+	 */
+	
+	public boolean addSpacePouvoir(SpacePouvoir sp)
 	{
+		if(getCurrentSpacePouvoirsSize() + sp.getSize() > getCapacity())
+			return false;
+		
 		myCurrentSpacePouvoirs.add(sp);
+		return true;
 	}
+	
+	/**
+	 * Supprimer un buff.
+	 * @param sp le buff à supprimer
+	 */
 	
 	public void removeSpacePouvoir(SpacePouvoir sp)
 	{
 		myCurrentSpacePouvoirs.remove(sp);
 	}
 	
+	/**
+	 * @return une liste des buffs qui tournent sur le joueur
+	 */
+	
 	public ArrayList<SpacePouvoir> getSpacePouvoirs()
 	{
 		return new ArrayList<>(myCurrentSpacePouvoirs);
 	}
 	
+	/**
+	 * Définir une capacité de stockage des buffs au personnage
+	 * @param capacity la capacité à définir
+	 */
+	
+	public void setCapacity(int capacity)
+	{
+		myCapacity = capacity;
+	}
+	
+	/**
+	 * @return la capacité de stockage des buffs du personnage
+	 */
+	
+	public int getCapacity()
+	{
+		return myCapacity;
+	}
+	
+	/**
+	 * @return la place que prennent les buffs qui tournent actuellement sur le personnage
+	 */
+	
+	public int getCurrentSpacePouvoirsSize()
+	{
+		int space = 0;
+		for(SpacePouvoir pp : myCurrentSpacePouvoirs)
+			space += pp.getSize();
+		
+		return space;
+	}
+	
+	/**
+	 * Envoyer un message au personnage, seul les joueurs peuvent voir les messages.
+	 * @param channel le canal de discussion dans lequel le message sera envoyé
+	 * @param msg le message à envoyé
+	 */
+	
 	public void sendMessage(Channel channel, String msg)
 	{
 		sendMessage(channel.getPrefix() + msg);
 	}
+	
+	/**
+	 * Enumération représentant un canal de discussion.
+	 * @author Wisteca
+	 */
 	
 	public static enum Channel {
 		
@@ -371,12 +614,22 @@ public abstract class Personnage extends PassivePersonnage {
 		{
 			myPrefix = prefix;
 		}
-			
+		
+		/**
+		 * @return le préfix du canal utilisé devant chaque message
+		 */
+		
 		public String getPrefix()
 		{
 			return myPrefix;
 		}
 	}
+	
+	/**
+	 * Enumération des races.
+	 * @author Wisteca
+	 * @see Skill
+	 */
 	
 	public static enum Race {
 		
@@ -394,11 +647,20 @@ public abstract class Personnage extends PassivePersonnage {
 			myCleanName = cleanName;
 		}
 		
+		/**
+		 * @return le nom de la race écrit proprement avec une majuscule
+		 */
+		
 		public String getCleanName()
 		{
 			return myCleanName;
 		}
 	}
+	
+	/**
+	 * Enumération des classes.
+	 * @author Wisteca
+	 */
 	
 	public static enum Classe {
 		
@@ -421,6 +683,10 @@ public abstract class Personnage extends PassivePersonnage {
 		{
 			myCleanName = cleanName;
 		}
+		
+		/**
+		 * @return le nom de la classe écrit proprement avec une majuscule
+		 */
 		
 		public String getCleanName()
 		{
