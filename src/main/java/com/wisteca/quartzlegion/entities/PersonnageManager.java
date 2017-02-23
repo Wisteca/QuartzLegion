@@ -16,7 +16,7 @@ import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
 public class PersonnageManager implements Listener {
 	
 	/**
-	 * Singletone qui contient tous les personnages et qui se charge d'appeler leurs événements
+	 * Singletone qui contient tous les personnages et qui se charge d'appeler leurs événements.
 	 * @author Wisteca
 	 */
 	
@@ -24,7 +24,7 @@ public class PersonnageManager implements Listener {
 	private HashMap<UUID, PassivePersonnage> myPersonnages = new HashMap<>();
 	
 	/**
-	 * l'instance est construite au démarrage du plugin, ne pas appeler le constructeur
+	 * L'instance est construite au démarrage du plugin, ne pas appeler le constructeur.
 	 */
 	
 	public PersonnageManager()
@@ -34,7 +34,7 @@ public class PersonnageManager implements Listener {
 	}
 	
 	/**
-	 * les personnages s'ajoutent automatiquement à leur construction
+	 * Les personnages s'ajoutent automatiquement à leur construction.
 	 * @param perso le personnage en question
 	 */
 	
@@ -44,7 +44,7 @@ public class PersonnageManager implements Listener {
 	}
 	
 	/**
-	 * supprimer un personnage de la liste, appeler automatiquement
+	 * Supprimer un personnage de la liste, appeler automatiquement.
 	 * @param uuid
 	 */
 	
@@ -64,7 +64,7 @@ public class PersonnageManager implements Listener {
 	}
 	
 	/**
-	 * @return l'instamce de PersonnageManager construite au démarrage du plugin
+	 * @return l'instance de PersonnageManager construite au démarrage du plugin
 	 */
 	
 	public static PersonnageManager getInstance()
@@ -85,7 +85,7 @@ public class PersonnageManager implements Listener {
 	}
 	
 	/**
-	 * méthode appelé par l'api bukkit lorsqu'un event se déclenche, les personnages seront ensuite itérés et le onEvent du personnage sera appelé
+	 * Méthode appelé par l'api bukkit lorsqu'un event se déclenche, les personnages seront ensuite itérés et le onEvent du personnage sera appelé.
 	 */
 	
 	@EventHandler

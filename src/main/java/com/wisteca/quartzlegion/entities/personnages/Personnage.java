@@ -1,5 +1,6 @@
 package com.wisteca.quartzlegion.entities.personnages;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -9,10 +10,12 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Element;
 
+import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.personnages.combats.Damage;
 import com.wisteca.quartzlegion.entities.personnages.combats.Damage.DamageType;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
+import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon.WeaponType;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.AttackPouvoir;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SkillsBuff;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SpacePouvoir;
@@ -29,13 +32,13 @@ public abstract class Personnage extends PassivePersonnage {
 
 	private int myHealth, myEnergy, myLevel, myCapacity; // vie, énergie, niveau et capacité de stockage des buffs
 	private HashMap<Skill, Integer> mySkills = new HashMap<>(); // skills de base
-	private ArrayList<SpacePouvoir> myCurrentSpacePouvoirs = new ArrayList<>(); // pouvoirs "passifs"
+	private ArrayList<SpacePouvoir> myCurrentPouvoirs = new ArrayList<>(); // pouvoirs "passifs"
 	private AttackPouvoir[] myAttackPouvoirs = new AttackPouvoir[8]; // pouvoirs d'attaque
 	private IntelligentPersonnage[] myPets = new IntelligentPersonnage[3]; // "animaux" de compagnie
 	private Personnage mySelectedPersonnage; // personnage séléctionné, non sérializé
 	
 	/**
-	 * Construire un personnage en spécifiant chaque attributs
+	 * Construire un personnage en spécifiant chaque attribut
 	 * @param uuid l'uuid du personnage
 	 * @param race la race du personnage
 	 * @param classe la classe du personnage
@@ -47,7 +50,7 @@ public abstract class Personnage extends PassivePersonnage {
 	 * @param capacity la capacité de stockage des buffs du personnage
 	 */
 	
-	public Personnage(UUID uuid, Race race, Classe classe, Weapon[] weapons, Armor[] armors, HashMap<Skill, Integer> skills, AttackPouvoir[] pouvoirs, int level, int capacity)
+	public Personnage(UUID uuid, Race race, Classe classe, Weapon[] weapons, Armor[] armors, HashMap<Skill, Integer> skills, Class<? extends AttackPouvoir>[] pouvoirs, int level, int capacity)
 	{
 		super(race, classe, uuid, weapons, armors);
 		
@@ -61,9 +64,15 @@ public abstract class Personnage extends PassivePersonnage {
 				mySkills.put(skill, 1);
 		}
 		
+		int i = 0;
+		for(Class<? extends AttackPouvoir> type : pouvoirs)
+		{
+			myAttackPouvoirs[i] = newInstance(type);
+			i++;
+		}
+			
 		myHealth = getSkillFix(ClasseSkill.VIE_TOTALE);
 		myEnergy = getSkillFix(ClasseSkill.ENERGIE_TOTALE);
-		myAttackPouvoirs = pouvoirs.clone();
 		myLevel = level;
 		myCapacity = capacity;
 	}
@@ -77,6 +86,20 @@ public abstract class Personnage extends PassivePersonnage {
 	{
 		super(element);
 		deserialize(element);
+	}
+	
+	private AttackPouvoir newInstance(Class<? extends AttackPouvoir> type)
+	{
+		try {
+			
+			return type.getConstructor(Personnage.class).newInstance(this);
+		
+		} catch(InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException ex) {
+			ex.printStackTrace();
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -208,9 +231,9 @@ public abstract class Personnage extends PassivePersonnage {
 	}
 	
 	/**
-	 * Récupérer une compétence en y additionnant sa dépendance aux compétences d'habilités
+	 * Récupérer une compétence en y additionnant sa dépendance aux compétences d'habilitées
 	 * @param skill la compétence à récupérer
-	 * @return la valeur de la compétence (nette) + sa dépendance aux compétences d'habilités
+	 * @return la valeur de la compétence (nette) + sa dépendance aux compétences d'habilitées
 	 * @see Skill pour plus d'infos sur le système de compétences
 	 */
 	
@@ -219,7 +242,7 @@ public abstract class Personnage extends PassivePersonnage {
 		if(skill instanceof ClasseSkill)
 		{
 			ClasseSkill cSkill = (ClasseSkill) skill;
-			// calcul des dépendances aux skills d'habilités
+			// calcul des dépendances aux skills d'habilitées
 			int ajout = 0;
 			for(HabilitySkill hSkill : HabilitySkill.values())
 				ajout += (int) Math.floor((double) cSkill.getDependencie(hSkill) / 100 * getSkillFix(hSkill));
@@ -231,7 +254,7 @@ public abstract class Personnage extends PassivePersonnage {
 	}
 	
 	/**
-	 * Récupérer une compétence temporaire, les compétences temporaires sont calculées en additionnant la compétence nette + sa dépendance aux compétences d'habilités 
+	 * Récupérer une compétence temporaire, les compétences temporaires sont calculées en additionnant la compétence nette + sa dépendance aux compétences d'habilitées 
 	 * + les pouvoirs qui l'augmentent + les augmentations des armes et armures.
 	 * @param skill la compétence à récupérer
 	 * @return la valeur temporaire de cette compétence
@@ -242,7 +265,7 @@ public abstract class Personnage extends PassivePersonnage {
 	{
 		// augmentation des buffs
 		int boost = 0;
-		for(SpacePouvoir buff : myCurrentSpacePouvoirs)
+		for(SpacePouvoir buff : myCurrentPouvoirs)
 			if(buff instanceof SkillsBuff)
 				boost += ((SkillsBuff) buff).getModification(skill);
 		
@@ -265,6 +288,15 @@ public abstract class Personnage extends PassivePersonnage {
 	public int getMaxValue(Skill skill)
 	{
 		return getLevel() * 5; // CHANGERA PAR LA SUITE
+	}
+	
+	@Override
+	public void doTime()
+	{
+		super.doTime();
+		
+		for(SpacePouvoir pp : myCurrentPouvoirs)
+			pp.doTime();
 	}
 	
 	/**
@@ -305,39 +337,40 @@ public abstract class Personnage extends PassivePersonnage {
 	}
 	
 	/**
-	 * Récupérer la puissance d'attaque du personnage pour un pouvoir donné. Prends en compte les dégâts du pouvoir + ceux de l'arme.
-	 * @param pouvoir le pouvoir utilisé pour attaquer
-	 * @return un objet {@link Damage}
+	 * Récupérer la puissance d'attaque du personnage en fonction de l'arme utilisée. Les dégâts sont calculés comme ceci :
+	 * dégâts arme + compétence / 2
+	 * @param weapon le type de l'arme utilisée pour attaquer
+	 * @return un objet {@link Damage} ou null si le personnage n'a pas d'arme du type passé en paramètre
 	 */
 	
-	public Damage getAttackPower(AttackPouvoir pouvoir)
+	public Damage getAttackPower(WeaponType weapon)
 	{
+		//  arme utilisée
 		Weapon currentWeapon = null;
 		for(Weapon w : getWeapons())
-			if(w.getWeaponType().equals(pouvoir.getWeaponType()))
-			{
-				currentWeapon = w; // En sachant qu'un personnage ne peut pas avoir deux armes du même type, currentWeapon est l'arme utilisée pour lancer le pouvoir paramétré.
-				break;
-			}
+			if(w.getWeaponType().equals(weapon))
+				currentWeapon = w;
 		
-		Damage power = new Damage();
+		if(currentWeapon == null)
+			return null;
+		
+		Damage infos = new Damage();
 		
 		HashMap<DamageType, Integer> damages = new HashMap<>();
 		for(DamageType type : DamageType.values())
-			damages.put(type, pouvoir.getDamages().get(type) + currentWeapon.getRandomDamages(type));
-			
-		// dégâts = pouvoir + arme
+			damages.put(type, currentWeapon.getRandomDamages(type) + getTemporarySkill(weapon.getSkill()) / 2);
+		
 		HashMap<Skill, Integer> skills = new HashMap<>();
 		for(Skill skill : Skill.values())
 			skills.put(skill, getTemporarySkill(skill));
 		
-		power.setDamages(damages);
-		power.setSkills(skills);
-		power.setCriticalDamages(currentWeapon.getCriticalDamages());
-		power.setCriticalLuck(currentWeapon.getCriticalLuck());
-		power.setWeaponType(currentWeapon.getWeaponType());
+		infos.setDamages(damages);
+		infos.setSkills(skills);
+		infos.setWeaponType(weapon);
+		infos.setCriticalLuck(currentWeapon.getCriticalLuck());
+		infos.setCriticalDamages(currentWeapon.getCriticalDamages());
 		
-		return power;
+		return infos;
 	}
 	
 	/**
@@ -390,18 +423,23 @@ public abstract class Personnage extends PassivePersonnage {
 		// calcul des dégâts
 		int totalDamage = 0;
 		for(DamageType type : DamageType.values())
-			totalDamage += damage.getDamages().get(type) - getProtection(type);
+			totalDamage += damage.getDamages().get(type) - (getProtection(type) + getTemporarySkill(ClasseSkill.ARMURE) / 5);
 		totalDamage /= DamageType.values().length;
 		
-		// critique                                                    MAX VALUE
-		if(new Random().nextInt(100) <= damage.getCriticalLuck() / 100 * 10000)
+		// critique
+		if(new Random().nextInt(Constants.MAX_CRITICAL_LUCK) <= damage.getCriticalLuck())
 			totalDamage += damage.getCriticalDamages() / 10;
 		
 		if(totalDamage < 0)
 			totalDamage = 0;
 		
-		changeHealth(totalDamage);
+		changeHealth(-totalDamage);
 		return totalDamage;
+	}
+	
+	private boolean checkEvade(ClasseSkill skill, int compare)
+	{
+		return new Random().nextInt(getTemporarySkill(skill)) > compare;
 	}
 	
 	/**
@@ -412,11 +450,6 @@ public abstract class Personnage extends PassivePersonnage {
 	public boolean isDead()
 	{
 		return myHealth == 0;
-	}
-	
-	private boolean checkEvade(ClasseSkill skill, int compare)
-	{
-		return new Random().nextInt(getTemporarySkill(skill)) > compare;
 	}
 	
 	/**
@@ -444,16 +477,17 @@ public abstract class Personnage extends PassivePersonnage {
 	
 	/**
 	 * Mettre un pouvoir à l'emplacement indexé, pour que le pouvoir puisse être équipé, il faut que le personnage possède une arme du type du pouvoir.
-	 * @param index l'index où placé le pouvoir
-	 * @param pouvoir le pouvoir à placé
+	 * @param index l'index où placer le pouvoir
+	 * @param pouvoir le type de pouvoir à placer
 	 * @throws ArrayIndexOutOfBoundsException si l'index n'est pas compris entre 0 et 7
 	 * @return true si le pouvoir à été équipé, false si le personnage n'avait pas l'arme du type requis
 	 */
 	
-	public boolean setPouvoir(int index, AttackPouvoir pouvoir)
+	public boolean setPouvoir(int index, Class<? extends AttackPouvoir> type)
 	{
 		for(Weapon w : getWeapons())
 		{
+			AttackPouvoir pouvoir = newInstance(type);
 			if(w.getWeaponType().equals(pouvoir.getWeaponType()) == false)
 				continue;
 			
@@ -465,8 +499,8 @@ public abstract class Personnage extends PassivePersonnage {
 	}
 	
 	/**
-	 * @param index l'index du pouvoir à récupéré
-	 * @return le pouvoir placé à l'index
+	 * @param index l'index du lanceur à récupérer
+	 * @return le lanceur de pouvoir placé à l'index
 	 * @throws ArrayIndexOutOfBoundsException si l'index n'est pas compris entre 0 et 7
 	 */
 	
@@ -476,7 +510,7 @@ public abstract class Personnage extends PassivePersonnage {
 	}
 	
 	/**
-	 * @return une liste des pouvoirs du personnage
+	 * @return une liste des lanceurs d'attaques du personnage
 	 */
 	
 	public AttackPouvoir[] getPouvoirs()
@@ -526,7 +560,7 @@ public abstract class Personnage extends PassivePersonnage {
 		if(getCurrentSpacePouvoirsSize() + sp.getSize() > getCapacity())
 			return false;
 		
-		myCurrentSpacePouvoirs.add(sp);
+		myCurrentPouvoirs.add(sp);
 		return true;
 	}
 	
@@ -537,7 +571,7 @@ public abstract class Personnage extends PassivePersonnage {
 	
 	public void removeSpacePouvoir(SpacePouvoir sp)
 	{
-		myCurrentSpacePouvoirs.remove(sp);
+		myCurrentPouvoirs.remove(sp);
 	}
 	
 	/**
@@ -546,7 +580,7 @@ public abstract class Personnage extends PassivePersonnage {
 	
 	public ArrayList<SpacePouvoir> getSpacePouvoirs()
 	{
-		return new ArrayList<>(myCurrentSpacePouvoirs);
+		return new ArrayList<>(myCurrentPouvoirs);
 	}
 	
 	/**
@@ -575,7 +609,7 @@ public abstract class Personnage extends PassivePersonnage {
 	public int getCurrentSpacePouvoirsSize()
 	{
 		int space = 0;
-		for(SpacePouvoir pp : myCurrentSpacePouvoirs)
+		for(SpacePouvoir pp : myCurrentPouvoirs)
 			space += pp.getSize();
 		
 		return space;

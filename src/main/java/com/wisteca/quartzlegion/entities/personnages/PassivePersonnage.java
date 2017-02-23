@@ -18,7 +18,7 @@ import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 
 /**
- * Classe de base de chaques entités, représente une entité décorative et incapable de se battre, possède des armes pour la décoration !
+ * Classe de base de chaque entités, représente une entité décorative et incapable de se battre, possède des armes pour la décoration !
  * @author Wisteca
  */
 
@@ -31,7 +31,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	private UUID myUniqueId;
 	
 	/**
-	 * Construire un objet en spécifiant chaque paramètres
+	 * Construire un objet en spécifiant chaque paramètres.
 	 * @param race race du personnage
 	 * @param classe classe du personnage
 	 * @param uniqueId uuid du personnage
@@ -71,7 +71,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	}
 	
 	/**
-	 * Construire un objet en le déserializant
+	 * Construire un objet en le déserializant.
 	 * @param element
 	 */
 	
@@ -179,8 +179,8 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	}
 	
 	/**
-	 * méthode appelée automatiquement lorsqu'un événement se déclenche, {@link PersonnageManager} pour voir la liste d'événements
-	 * pour écouter un événement : if(e instanceof PlayerInteractAtEntityEvent) { // on sait que le personnage vient d'interagir avec une entité }
+	 * Méthode appelée automatiquement lorsqu'un événement se déclenche, {@link PersonnageManager} pour voir la liste d'événements.
+	 * Pour écouter un événement : if(e instanceof PlayerInteractAtEntityEvent) { // on sait que le personnage vient d'interagir avec une entité }
 	 * @param e l'événement en question
 	 */
 	
@@ -188,8 +188,8 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	{}
 	
 	/**
-	 * méthode appelée chaque ticks (20 fois par secondes), peut être redéfinie pour faire des checks régulier ou autre
-	 * <strong>ne pas appeler cette méthode, cela pourrait fausser des compteurs comme celui des buffs ! elle est appelée chaque ticks dans l'entité NMS du personnage</strong>
+	 * Méthode appelée chaque ticks (20 fois par secondes), peut être redéfinie pour faire des checks régulier ou autre.
+	 * <strong>Ne pas appeler cette méthode, cela pourrait fausser des compteurs comme celui des buffs ! elle est appelée chaque ticks dans l'entité NMS du personnage.</strong>
 	 */
 	
 	public void doTime()

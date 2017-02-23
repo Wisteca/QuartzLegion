@@ -10,11 +10,18 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Element;
 
+import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
 import com.wisteca.quartzlegion.entities.personnages.combats.Damage.DamageType;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
+import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
 import com.wisteca.quartzlegion.utils.ItemType;
 import com.wisteca.quartzlegion.utils.Utils;
+
+/**
+ * Représente une arme sous forme d'item.
+ * @author Wisteca
+ */
 
 public class Weapon extends Equipment {
 	
@@ -22,10 +29,25 @@ public class Weapon extends Equipment {
 	private HashMap<DamageType, WeaponDamage> myDamages = new HashMap<>();
 	private int myCriticalLuck, myCriticalDamages;
 	
-	public Weapon(ItemType type, WeaponType weapon, Classe requiredCLasse, HashMap<DamageType, WeaponDamage> damages,
-			int criticalLuck, int criticalDamage, String name, String description)
+	/**
+	 * Construire une arme en précisant tous ses attributs.
+	 * @param type le type d'item
+	 * @param weapon le type d'arme
+	 * @param requiredCLasse la classe requise pour s'équiper de l'arme ou null pour que tout le monde puisse l'équiper
+	 * @param damages les dégâts de l'arme
+	 * @param requirements les compétences requises pour pouvoir équiper l'arme
+	 * @param increases les augmentations des compétences que provoque l'arme quand elle est équipée
+	 * @param requiredLevel le niveau requis pour équiper l'arme
+	 * @param criticalLuck les chances de faire un coup critique, {@link Constants} pour voir la valeur maximal
+	 * @param criticalDamage les dégâts en plus si un coup critique se déclenche
+	 * @param name le nom de l'arme
+	 * @param description la description de l'arme
+	 */
+	
+	public Weapon(ItemType type, WeaponType weapon, Classe requiredCLasse, HashMap<DamageType, WeaponDamage> damages, HashMap<Skill, Integer> requirements, HashMap<Skill, Integer> increases,
+			int requiredLevel, int criticalLuck, int criticalDamage, String name, String description)
 	{
-		super(type, requiredCLasse, name, description);
+		super(type, requiredCLasse, requirements, increases, requiredLevel, name, description);
 		myWeaponType = weapon;
 		myCriticalLuck = criticalLuck;
 		myCriticalDamages = criticalDamage;
@@ -45,6 +67,11 @@ public class Weapon extends Equipment {
 		
 		updateLore();
 	}
+	
+	/**
+	 * Construire une arme en la déserializant.
+	 * @param element
+	 */
 	
 	public Weapon(Element element)
 	{
@@ -114,10 +141,18 @@ public class Weapon extends Equipment {
 		return total / DamageType.values().length;
 	}
 	
+	/**
+	 * @return le type de l'arme
+	 */
+	
 	public WeaponType getWeaponType()
 	{
 		return myWeaponType;
 	}
+	
+	/**
+	 * @param type le nouveau type de l'arme
+	 */
 	
 	public void setWeaponType(WeaponType type)
 	{
@@ -125,16 +160,33 @@ public class Weapon extends Equipment {
 		updateLore();
 	}
 	
+	/**
+	 * Changer des dégâts existants ou ajouter de nouveaux dégâts.
+	 * @param type le type de dégât
+	 * @param damages les nouveaux dégâts
+	 */
+	
 	public void setDamage(DamageType type, WeaponDamage damages)
 	{
 		myDamages.put(type, damages);
 		updateLore();
 	}
 	
+	/**
+	 * @param type le type de dégât à récupérer
+	 * @return un objet {@link WeaponDamage} contenant les dégats minimum et maximum
+	 */
+	
 	public WeaponDamage getDamages(DamageType type)
 	{
 		return myDamages.get(type);
 	}
+	
+	/**
+	 * Récupérer un nombre de dégâts aléatoire entre le maximum et le minimum
+	 * @param type le type de dégâts
+	 * @return un nombre aléatoire
+	 */
 	
 	public int getRandomDamages(DamageType type)
 	{
@@ -142,11 +194,19 @@ public class Weapon extends Equipment {
 				+ myDamages.get(type).getMinDamage();
 	}
 	
+	/**
+	 * @param luck les nouvelles chances de critique
+	 */
+	
 	public void setCriticalLuck(int luck)
 	{
 		myCriticalLuck = luck;
 		updateLore();
 	}
+	
+	/**
+	 * @param damages les nouveaux dégâts critique
+	 */
 	
 	public void setCriticalDamages(int damages)
 	{
@@ -154,10 +214,18 @@ public class Weapon extends Equipment {
 		updateLore();
 	}
 	
+	/**
+	 * @return les chances de critique de l'arme
+	 */
+	
 	public int getCriticalLuck()
 	{
 		return myCriticalLuck;
 	}
+	
+	/**
+	 * @return les dégâts critique de l'arme
+	 */
 	
 	public int getCriticalDamages()
 	{
@@ -201,9 +269,19 @@ public class Weapon extends Equipment {
 		updateLore();
 	}
 	
+	/**
+	 * Simple classe contenant deux attributs, les dégâts maximum et minimum d'une arme.
+	 * @author Wisteca
+	 */
+	
 	public static class WeaponDamage {
 		
 		private int myMinDamage, myMaxDamage;
+		
+		/**
+		 * @param minDamage les dégâts minimum
+		 * @param maxDamage les dégâts maximum
+		 */
 		
 		public WeaponDamage(int minDamage, int maxDamage)
 		{
@@ -211,16 +289,29 @@ public class Weapon extends Equipment {
 			myMaxDamage = maxDamage;
 		}
 		
+		/**
+		 * @return les dégâts minimum
+		 */
+		
 		public int getMinDamage()
 		{
 			return myMinDamage;
 		}
+		
+		/**
+		 * @return les dégâts maxmimum
+		 */
 		
 		public int getMaxDamage()
 		{
 			return myMaxDamage;
 		}
 	}
+	
+	/**
+	 * Enumération des différents types d'armes.
+	 * @author Wisteca
+	 */
 	
 	public static enum WeaponType {
 		
@@ -240,9 +331,22 @@ public class Weapon extends Equipment {
 			myCleanName = cleanName;
 		}
 		
+		/**
+		 * @return le nom du type écrit proprement avec une majuscule au début
+		 */
+		
 		public String getCleanName()
 		{
 			return myCleanName;
+		}
+		
+		/**
+		 * @return la compétence en rapport avec ce type d'arme
+		 */
+		
+		public ClasseSkill getSkill()
+		{
+			return ClasseSkill.valueOf(this.toString());
 		}
 	}
 }

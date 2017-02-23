@@ -2,11 +2,12 @@ package com.wisteca.quartzlegion.utils;
 
 import org.bukkit.Material;
 
+/**
+ * Regroupement de tous les items de base de jeu + les items custom avec une durabilité.
+ * @author Wisteca
+ */
+
 public enum ItemType {
-	
-	/*
-	 * Regroupement de tous les items du jeu et du resource pack ainsi que leurs durabilités.
-	 */
 	
 	AIR(Material.AIR, (short) 0),
 	STONE(Material.STONE, (short) 0),
@@ -442,10 +443,18 @@ public enum ItemType {
 		myDurability = durability;
 	}
 	
+	/**
+	 * @return le org.bukkit.Material du type
+	 */
+	
 	public Material getMaterial()
 	{
 		return myType;
 	}
+	
+	/**
+	 * @return la durabilité qui permet d'avoir l'item custom qui apparaît dans le resource pack
+	 */
 	
 	public short getDurability()
 	{

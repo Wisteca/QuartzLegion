@@ -14,15 +14,22 @@ import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.data.Serializer;
 
+/**
+ * Classe utile pour gérer plus facilement les items, elle a comme attribut un ItemType au lieu d'un Material, pour gérer plus facilement les items custom à durabilité.
+ * @author Wisteca
+ */
+
 public class Item implements Serializer {
-	
-	/*
-	 * Classe utile pour gérer les items.
-	 */
 
 	private ItemStack myItem;
 	private ItemType myType;
 	private boolean myIsPermanent;
+	
+	/**
+	 * Créer un item avec les attributs de base et en spécifiant juste un ItemType
+	 * @param type le type de l'item
+	 * @see ItemType
+	 */
 	
 	public Item(ItemType type)
 	{
@@ -30,6 +37,18 @@ public class Item implements Serializer {
 		myType = type;
 		myIsPermanent = false;
 	}
+	
+	/**
+	 * Créer un item en spécifiant chaque attributs.
+	 * @param type le type de l'item
+	 * @param amount le nombre d'item
+	 * @param permanent si l'item peut être jeté ou non de l'inventaire du joueur
+	 * @param name le nom de l'item
+	 * @param lore la description de l'item
+	 * @param hasFlags si l'item a les flags tel que cacher la durabilité, les enchantements etc...
+	 * @param isShiny si l'item a un effet brillant (est enchanté)
+	 * @see ItemType
+	 */
 	
 	public Item(ItemType type, int amount, boolean permanent, String name, List<String> lore, boolean hasFlags, boolean isShiny)
 	{
@@ -42,20 +61,37 @@ public class Item implements Serializer {
 		setShiny(isShiny);
 	}
 	
+	/**
+	 * Permet de construire un item en le déserializant d'une chaîne XML.
+	 * @param element l'élément dans lequel l'item a été sérializé auparavant
+	 */
+	
 	public Item(Element element)
 	{
 		deserialize(element);
 	}
+	
+	/**
+	 * @param amount le nombre d'items
+	 */
 	
 	public void setAmount(int amount)
 	{
 		myItem.setAmount(amount);
 	}
 	
+	/**
+	 * @return le nombre d'items
+	 */
+	
 	public int getAmount()
 	{
 		return myItem.getAmount();
 	}
+	
+	/**
+	 * @param type le nouveau type de l'item
+	 */
 	
 	public void setType(ItemType type)
 	{
@@ -64,10 +100,19 @@ public class Item implements Serializer {
 		myItem.setDurability(type.getDurability());
 	}
 	
+	/**
+	 * @return le type de l'item
+	 */
+	
 	public ItemType getType()
 	{
 		return myType;
 	}
+	
+	/**
+	 * Permet de facilement modifier le nom de l'item sans passer par l'ItemMeta...
+	 * @param name le nouveau nom de l'item
+	 */
 	
 	public void setName(String name)
 	{
@@ -76,10 +121,19 @@ public class Item implements Serializer {
 		myItem.setItemMeta(meta);
 	}
 	
+	/**
+	 * @return le nom de l'item
+	 */
+	
 	public String getName()
 	{
 		return myItem.getItemMeta().getDisplayName();
 	}
+	
+	/**
+	 * Mettre une description à l'item
+	 * @param lore un tableau de String contenant la description lignes par lignes
+	 */
 	
 	public void setLore(String... lore)
 	{
@@ -100,6 +154,11 @@ public class Item implements Serializer {
 		myItem.setItemMeta(meta);
 	}
 	
+	/**
+	 * Mettre une description à l'item
+	 * @param lore une collection de String à mettre en description
+	 */
+	
 	public void setLore(List<String> lore)
 	{
 		if(lore == null)
@@ -115,10 +174,19 @@ public class Item implements Serializer {
 		myItem.setItemMeta(meta);
 	}
 	
+	/**
+	 * Récupérer la description
+	 * @return la description
+	 */
+	
 	public List<String> getLore()
 	{
 		return myItem.getItemMeta().getLore();
 	}
+	
+	/**
+	 * @param shiny true si l'item est brillant (enchanté)
+	 */
 	
 	public void setShiny(boolean shiny)
 	{
@@ -128,10 +196,19 @@ public class Item implements Serializer {
 			myItem.removeEnchantment(Enchantment.DURABILITY);
 	}
 	
+	/**
+	 * @return true si l'item est brillant (enchanté)
+	 */
+	
 	public boolean isShiny()
 	{
 		return myItem.containsEnchantment(Enchantment.DURABILITY);
 	}
+	
+	/**
+	 * Mettre ou non tous les flags telle que cacher la durabilité, les enchantements, etc...
+	 * @param flags true pour mettre les flags
+	 */
 	
 	public void setFlags(boolean flags)
 	{
@@ -151,6 +228,10 @@ public class Item implements Serializer {
 		myItem.setItemMeta(meta);
 	}
 	
+	/**
+	 * @return true si l'item a les flags
+	 */
+	
 	public boolean hasFlags()
 	{
 		boolean hasFlags = true;
@@ -167,16 +248,28 @@ public class Item implements Serializer {
 		return hasFlags;
 	}
 	
+	/**
+	 * @param permanent true pour empêcher un joueur de lancer l'item
+	 */
+	
 	public void setPermanent(boolean permanent)
 	{
 		myIsPermanent = permanent;
 		setLore();
 	}
 	
+	/**
+	 * @return true si l'item est permanent, donc que les joueurs ne peuvent pas le lancer
+	 */
+	
 	public boolean isPermanent()
 	{
 		return myIsPermanent;
 	}
+	
+	/**
+	 * @return une copie de l'item sous forme d'ItemStack
+	 */
 	
 	public ItemStack toItemStack()
 	{
@@ -210,7 +303,7 @@ public class Item implements Serializer {
 	public void deserialize(Element element)
 	{
 		Element item = (Element) element.getElementsByTagName("item").item(0);
-		
+		System.out.println(item.getAttribute("type"));
 		ItemType type = ItemType.valueOf(item.getAttribute("type"));
 		myItem = new ItemStack(type.getMaterial(), Integer.valueOf(item.getAttribute("amount")), type.getDurability());
 		

@@ -37,4 +37,11 @@ public class SphereEffect extends AOEffect {
 	{
 		
 	}
+
+	@Override
+	public String getName()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -14,13 +14,31 @@ import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.utils.ItemType;
 import com.wisteca.quartzlegion.utils.Utils;
 
+/**
+ * Représente une armure sous forme d'item.
+ * @author Wisteca
+ */
+
 public class Armor extends Equipment {
 	
 	private HashMap<DamageType, Integer> myProtections = new HashMap<>();
 	
-	public Armor(ItemType type, Classe requiredClasse, HashMap<DamageType, Integer> protections, String name, String description)
+	/**
+	 * Construire une armure en spécifiant chaque attributs.
+	 * @param type le type de l'item
+	 * @param requiredClasse la classe requise pour pouvoir s'équiper de l'armure ou null pour que tout le monde puisse l'équiper
+	 * @param protections une HashMap contenant les protections de l'armure face aux dégâts
+	 * @param name le nom de l'armure
+	 * @param description la description de l'armure
+	 * @param requirements les compétences requises pour pouvoir s'équiper de l'armure
+	 * @param increases les modifications que provoque l'armure sur les compétences du personnage qui l'équipe
+	 * @param requiredLevel le niveau requis pour s'équiper de l'armure
+	 */
+	
+	public Armor(ItemType type, Classe requiredClasse, HashMap<DamageType, Integer> protections, HashMap<Skill, Integer> requirements, HashMap<Skill, Integer> increases,
+			int requiredLevel, String name, String description)
 	{
-		super(type, requiredClasse, name, description);
+		super(type, requiredClasse, requirements, increases, requiredLevel, name, description);
 		
 		if(protections == null)
 		{
@@ -38,16 +56,33 @@ public class Armor extends Equipment {
 		updateLore();
 	}
 	
+	/**
+	 * Désérializer une armure.
+	 * @param element la chaîne XML dans laquelle une armure avait été sérializée auparavant
+	 */
+	
 	public Armor(Element element)
 	{
 		super(element);
 	}
+	
+	/**
+	 * Changer la protection de l'armure
+	 * @param protection le type de dégât à changer
+	 * @param value la nouvelle valeur du dégât
+	 */
 	
 	public void setProtection(DamageType protection, int value)
 	{
 		myProtections.put(protection, value);
 		updateLore();
 	}
+	
+	/**
+	 * Récupérer la protection de l'armure.
+	 * @param protection le type de dégât auquel récupérer la protection
+	 * @return la protection que possède l'armure pour ce type de dégât
+	 */
 	
 	public int getProtection(DamageType protection)
 	{

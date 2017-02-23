@@ -2,16 +2,26 @@ package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.util.Vector;
+import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Channel;
 
-public abstract class AreaPouvoir extends AttackPouvoir {
+/**
+ * Représente un pouvoir qui affecte une zone, ciblée par le personnage ou sur lui-même.
+ * @author Wisteca
+ */
 
+public abstract class AreaPouvoir extends AttackPouvoir {
+	
 	public AreaPouvoir(Personnage attacker)
 	{
 		super(attacker);
+	}
+	
+	public AreaPouvoir(Element element)
+	{
+		super(element);
 	}
 	
 	@Override
@@ -20,28 +30,37 @@ public abstract class AreaPouvoir extends AttackPouvoir {
 		if(super.launch() == false)
 			return false;
 		
-		Vector lookDirection = myAttacker.getEyeLocation().getDirection();
-		int distance = 50;
-		lookDirection.multiply(distance);
+		Location launchLoc = null;
 		
-		for(distance = 0 ; distance <= 50 ; distance++)
+		if(isAutoOnSelf())
+			launchLoc = getAttacker().getLocation();
+		else
 		{
-			Location loc = lookDirection.toLocation(myAttacker.getWorld());
-			if(loc.getBlock().equals(Material.AIR) == false)
+			for(int distance = 0 ; distance <= 50 ; distance++)
 			{
-				launchAt(loc);
-				break;
+				Location loc = getAttacker().getEyeLocation().getDirection().multiply(distance).toLocation(getAttacker().getWorld());
+				if(loc.getBlock().equals(Material.AIR) == false)
+				{
+					launchLoc = loc;
+					break;
+				}
+			}
+			
+			if(launchLoc == null)
+			{
+				getAttacker().sendMessage(Channel.COMBAT, "Vous regardez trop loin !");
+				return false;
 			}
 		}
 		
-		if(distance == 50)
-		{
-			myAttacker.sendMessage(Channel.COMBAT, "Vous regardez trop loin !");
-			return false;
-		}
-		
+		launchAt(launchLoc);
 		return true;
 	}
+	
+	/**
+	 * Méthode à redéfinir dans les classes filles appelée quand un pouvoir est lancé.
+	 * @param toLaunch la position ou le personnage regarde et veut que le pouvoir se déclenche
+	 */
 	
 	protected abstract void launchAt(Location toLaunch);
 	

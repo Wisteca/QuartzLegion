@@ -11,6 +11,11 @@ import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.utils.Item;
 import com.wisteca.quartzlegion.utils.ItemType;
 
+/**
+ * Représente un équipement comme une arme ou une armure.
+ * @author Wisteca
+ */
+
 public abstract class Equipment extends Item {
 	
 	protected String myDescription;
@@ -19,18 +24,41 @@ public abstract class Equipment extends Item {
 	private HashMap<Skill, Integer> myRequirements = new HashMap<>();
 	private HashMap<Skill, Integer> myIncreases = new HashMap<>();
 	
-	public Equipment(ItemType type, Classe requiredClasse, String name, String description)
+	/**
+	 * Construire un équipement en précisant tous les attributs.
+	 * @param type le type d'item
+	 * @param requiredClasse la classe requise pour équiper l'item ou null pour que tout le monde puisse l'équiper
+	 * @param requirements les compétences requises pour équiper l'équipement
+	 * @param increases les augmentations des compétences que provoque l'équipement lorsqu'il est équipé
+	 * @param requiredLevel le niveau requis pour équiper l'équipement
+	 * @param name le nom de l'équipement
+	 * @param description la description de l'équipement
+	 */
+	
+	public Equipment(ItemType type, Classe requiredClasse, HashMap<Skill, Integer> requirements, HashMap<Skill, Integer> increases, int requiredLevel, String name, String description)
 	{
 		super(type);
 		this.setName(name);
 		myDescription = description;
 		myRequiredClasse = requiredClasse;
+		myRequirements = requirements;
+		myIncreases = increases;
+		myRequiredLevel = requiredLevel;
 	}
+	
+	/**
+	 * Construire un équipement en le déserializant.
+	 * @param element l'élément dans lequel l'équipement a été sérializé auparavant
+	 */
 	
 	public Equipment(Element element)
 	{
 		super(element);
 	}
+	
+	/**
+	 * @param requirements les nouvelles compétences requises pour équiper l'équipement
+	 */
 	
 	public void setRequirements(HashMap<Skill, Integer> requirements)
 	{
@@ -38,11 +66,20 @@ public abstract class Equipment extends Item {
 		updateLore();
 	}
 	
+	/**
+	 * @param skill la compétence à changer
+	 * @param value la nouvelle valeur de la compétence
+	 */
+	
 	public void addRequirement(Skill skill, int value)
 	{
 		myRequirements.put(skill, value);
 		updateLore();
 	}
+	
+	/**
+	 * @param skill la compétence à supprimer
+	 */
 	
 	public void removeRequirement(Skill skill)
 	{
@@ -50,15 +87,28 @@ public abstract class Equipment extends Item {
 		updateLore();
 	}
 	
+	/**
+	 * @return les compétences requises pour équiper l'équipement
+	 */
+	
 	public HashMap<Skill, Integer> getRequirements()
 	{
 		return new HashMap<>(myRequirements);
 	}
 	
+	/**
+	 * @param skill la compétence à récupérer
+	 * @return la valeur de la compétence
+	 */
+	
 	public int getRequirement(Skill skill)
 	{
 		return myRequirements.containsKey(skill) ? myRequirements.get(skill) : 0;
 	}
+	
+	/**
+	 * @param level le nouveau niveau requis
+	 */
 	
 	public void setRequiredLevel(int level)
 	{
@@ -66,10 +116,18 @@ public abstract class Equipment extends Item {
 		updateLore();
 	}
 	
+	/**
+	 * @return le niveau requis pour équiper l'équipement
+	 */
+	
 	public int getRequiredLevel()
 	{
 		return myRequiredLevel;
 	}
+	
+	/**
+	 * @param increases les nouvelles augmentations que l'équipement provoque sur les personnages qui l'équipent
+	 */
 	
 	public void setIncreases(HashMap<Skill, Integer> increases)
 	{
@@ -77,10 +135,19 @@ public abstract class Equipment extends Item {
 		updateLore();
 	}
 	
+	/**
+	 * @return les augmentations que l'équipement provoque aux personnages qui l'équipe
+	 */
+	
 	public HashMap<Skill, Integer> getIncreases()
 	{
 		return new HashMap<>(myIncreases);
 	}
+	
+	/**
+	 * @param skill la compétence à ajouter ou à changer
+	 * @param value la valeur de la compétence
+	 */
 	
 	public void addIncrease(Skill skill, int value)
 	{
@@ -88,10 +155,19 @@ public abstract class Equipment extends Item {
 		updateLore();
 	}
 	
+	/**
+	 * @param skill la compétence à récupérer
+	 * @return la valeur de la compétence
+	 */
+	
 	public int getIncrease(Skill skill)
 	{
 		return myIncreases.get(skill) == null ? 0 : myIncreases.get(skill);
 	}
+	
+	/**
+	 * @param skill la compétence à supprimer
+	 */
 	
 	public void removeIncrease(Skill skill)
 	{
@@ -99,22 +175,38 @@ public abstract class Equipment extends Item {
 		updateLore();
 	}
 	
+	/**
+	 * @param classe la classe requise pour équiper l'équipement ou null pour que tout le monde puisse l'équiper
+	 */
+	
 	public void setRequiredClasse(Classe classe)
 	{
 		myRequiredClasse = classe;
 		updateLore();
 	}
 	
+	/**
+	 * @return la classe requise pour équiper l'équipement ou null si tout le monde peut l'équiper
+	 */
+	
 	public Classe getRequiredClasse()
 	{
 		return myRequiredClasse;
 	}
+	
+	/**
+	 * @param description la description de l'équipement qui apparaîtra dans le lore de l'item sous les caractéristiques
+	 */
 	
 	public void setDescription(String description)
 	{
 		myDescription = description;
 		updateLore();
 	}
+	
+	/**
+	 * @return la description de l'équipement
+	 */
 	
 	public String getDescription()
 	{

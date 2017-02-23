@@ -1,19 +1,42 @@
 package com.wisteca.quartzlegion;
 
+import java.io.File;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import com.wisteca.quartzlegion.data.Constants;
+import com.wisteca.quartzlegion.entities.PersonnageManager;
+import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon.WeaponType;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.AttackPouvoir;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SkillsBuffLauncher;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.HabilitySkill;
 import com.wisteca.quartzlegion.utils.ItemType;
 import com.wisteca.quartzlegion.utils.effects.SphereEffect;
+
+/**
+ * Classe faite n'importe comment pour divers tests, peut être modifié à tous moment, rien d'important se trouve dedans.
+ * @author Wisteca
+ */
 
 public class Test implements CommandExecutor {
 	
@@ -30,13 +53,42 @@ public class Test implements CommandExecutor {
 		
 		switch(args[0])
 		{
+			case "SkillsBuff" :
+				
+				try {
+					
+					SkillsBuffLauncher launcher = new SkillsBuffLauncher("Iron_Speed", (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId()));
+					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+					Element pouvoir = doc.createElement("test");
+					doc.appendChild(pouvoir);
+					launcher.serialize(pouvoir);
+					
+					final Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			        final DOMSource source = new DOMSource(doc);
+			        final StreamResult sortie = new StreamResult(new File(Constants.getServerFolderPath() + "/test.xml"));
+			        transformer.setOutputProperty(OutputKeys.VERSION, "1.0");
+			        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");         
+			        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+			        transformer.transform(source, sortie);
+				
+				} catch(ParserConfigurationException | TransformerException ex) {
+					ex.printStackTrace();
+				}
+				
+				break;
+			
+			case "attackTest" :	
+				p.sendMessage(AttackPouvoir.getPouvoirByName("AttackTest1", (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId())) + "");
+				break;
+			
 			case "particle":
 				new SphereEffect().launch(p.getLocation().add(0, 1, 0));
 				break;
 			
 			case "weapon":
 				
-				Weapon w = new Weapon(ItemType.DIAMOND_SWORD, WeaponType.LAME, Classe.ASSASSIN, null, 5, 8, "The GOOD",
+				Weapon w = new Weapon(ItemType.DIAMOND_SWORD, WeaponType.LAME, Classe.ASSASSIN, null, null, null, 5, 8, 0, "The GOOD",
 						"Arme forgée avec un rateau. Oui je sais c'est débile !");
 				w.setShiny(true);
 				w.setFlags(true);
@@ -61,7 +113,7 @@ public class Test implements CommandExecutor {
 				break;
 			case "armor":
 				
-				Armor a = new Armor(ItemType.DIAMOND_CHESTPLATE, Classe.BARBARE, null, "L'ARMURE DU CIECLE",
+				Armor a = new Armor(ItemType.DIAMOND_CHESTPLATE, Classe.BARBARE, null, null, null, 0, "L'ARMURE DU CIECLE",
 						"Cette armure est cassée et adjkfbadkj adfhkabd  adbaskdbj dkahsbdask khashdbask");
 				a.setFlags(true);
 				a.addRequirement(ClasseSkill.ARME_LONGUE, 45);

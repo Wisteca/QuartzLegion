@@ -1,4 +1,6 @@
 name: TheQuartzLegion
 version: 2.0
-main: ch.wisteca.quartzlegion.MainClass
+main: com.wisteca.quartzlegion.MainClass
 author: Wisteca
+commands:
+    test:

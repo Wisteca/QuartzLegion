@@ -8,7 +8,7 @@ ext {
 repositories {
     mavenLocal()
 }
-
+    
 dependencies {
 	compile "org.spigotmc:spigot-api:$spigotVersion"
 	compile "org.bukkit:craftbukkit:$spigotVersion"

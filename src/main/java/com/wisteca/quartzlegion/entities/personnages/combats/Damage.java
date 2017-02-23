@@ -5,6 +5,11 @@ import java.util.HashMap;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon.WeaponType;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 
+/**
+ * Un simple objet qui contient des attributs qui seront transmis entre des personnages pour s'envoyer des informations en rapport au combat.
+ * @author Wisteca
+ */
+
 public class Damage {
 	
 	private HashMap<DamageType, Integer> myDamages = new HashMap<>();
@@ -62,6 +67,11 @@ public class Damage {
 		return myWeaponType;
 	}
 	
+	/**
+	 * Enumération des types de dégâts.
+	 * @author Wisteca
+	 */
+	
 	public static enum DamageType {
 		
 		BRULURE			("Brûlure",			"Brûlure       "),
@@ -81,10 +91,18 @@ public class Damage {
 			mySpaceName = spaceName;
 		}
 		
+		/**
+		 * @return le nom du dégât écrit proprement avec une majuscule
+		 */
+		
 		public String getCleanName()
 		{
 			return myName;
 		}
+		
+		/**
+		 * @return le nom du dégâts écrit proprement avec une majuscule et avec des espaces derrière pour pouvoir environ aligner les noms dans un tableau
+		 */
 		
 		public String getSpaceName()
 		{
