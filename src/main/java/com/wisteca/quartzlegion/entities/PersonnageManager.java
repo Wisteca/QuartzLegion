@@ -5,13 +5,18 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import com.wisteca.quartzlegion.MainClass;
+import com.wisteca.quartzlegion.entities.personnages.Joueur;
 import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
+import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
+import com.wisteca.quartzlegion.entities.personnages.Personnage.Race;
 
 public class PersonnageManager implements Listener {
 	
@@ -31,6 +36,9 @@ public class PersonnageManager implements Listener {
 	{
 		myInstance = this;
 		Bukkit.getPluginManager().registerEvents(this, MainClass.getInstance());
+		
+		for(Player pls : Bukkit.getOnlinePlayers())
+			new Joueur(pls.getUniqueId(), Race.DRAKEIDE, Classe.ASSASSIN, pls);
 	}
 	
 	/**
@@ -51,6 +59,11 @@ public class PersonnageManager implements Listener {
 	public void removePersonnage(UUID uuid)
 	{
 		myPersonnages.remove(uuid);
+	}
+	
+	public HashMap<UUID, PassivePersonnage> getPersonnages()
+	{
+		return new HashMap<>(myPersonnages);
 	}
 	
 	/**
@@ -85,8 +98,15 @@ public class PersonnageManager implements Listener {
 	}
 	
 	/**
-	 * Méthode appelé par l'api bukkit lorsqu'un event se déclenche, les personnages seront ensuite itérés et le onEvent du personnage sera appelé.
+	 * Méthodes appelées par l'api bukkit lorsqu'un event se déclenche, les personnages seront ensuite itérés et le onEvent du personnage sera appelé.
 	 */
+	
+	@EventHandler
+	public void onJoin(PlayerJoinEvent e)
+	{
+		Player p = e.getPlayer();
+		new Joueur(p.getUniqueId(), Race.DRAKEIDE, Classe.ASSASSIN, p);
+	}
 	
 	@EventHandler
 	public void onInteract(PlayerInteractAtEntityEvent e)

@@ -21,13 +21,14 @@ import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.PersonnageManager;
+import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon.WeaponType;
-import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.AttackPouvoir;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SkillsBuffLauncher;
+import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.HabilitySkill;
 import com.wisteca.quartzlegion.utils.ItemType;
@@ -40,6 +41,8 @@ import com.wisteca.quartzlegion.utils.effects.SphereEffect;
 
 public class Test implements CommandExecutor {
 	
+	private SkillsBuffLauncher myLauncher;
+	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
@@ -50,18 +53,35 @@ public class Test implements CommandExecutor {
 		}
 		
 		Player p = (Player) sender;
+		Personnage perso = (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId());
 		
 		switch(args[0])
 		{
+			case "launch" :
+				
+				if(myLauncher == null)
+				{
+					p.sendMessage("OLALALA");
+					return true;
+				}
+				
+				p.sendMessage(myLauncher.getLauncher().getName());
+				myLauncher.launch();
+				
+				break;
+			
 			case "SkillsBuff" :
 				
 				try {
 					
-					SkillsBuffLauncher launcher = new SkillsBuffLauncher("Iron_Speed", (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId()));
+					for(PassivePersonnage pp : PersonnageManager.getInstance().getPersonnages().values())
+						Bukkit.broadcastMessage(pp.getName());
+					
+					myLauncher = new SkillsBuffLauncher("Iron_Speed", (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId()));
 					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 					Element pouvoir = doc.createElement("test");
 					doc.appendChild(pouvoir);
-					launcher.serialize(pouvoir);
+					myLauncher.serialize(pouvoir);
 					
 					final Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			        final DOMSource source = new DOMSource(doc);
@@ -78,10 +98,36 @@ public class Test implements CommandExecutor {
 				
 				break;
 			
-			case "attackTest" :	
-				p.sendMessage(AttackPouvoir.getPouvoirByName("AttackTest1", (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId())) + "");
+			case "seeSkills" :	
+				
+				for(Skill skill : Skill.values())
+				{
+					p.sendMessage(skill.getCompleteName() + " : " + perso.getTemporarySkill(skill));
+				}
+				
+				break;
+				
+			case "changeSkill" :
+				
+				if(args.length != 3)
+				{
+					p.sendMessage("changeSkill skill value");
+					return true;
+				}
+				
+				perso.setLevel(100);
+				Skill skill = Skill.valueOf(args[1]);
+				perso.changeSkillFix(skill, Integer.valueOf(args[2]));
+				perso.sendMessage(skill + " a été changé à : " + perso.getSkillFix(skill));
+				
 				break;
 			
+			case "changeEnergie" :
+				
+				perso.changeEnergy(Integer.valueOf(args[1]));
+				
+				break;
+				
 			case "particle":
 				new SphereEffect().launch(p.getLocation().add(0, 1, 0));
 				break;

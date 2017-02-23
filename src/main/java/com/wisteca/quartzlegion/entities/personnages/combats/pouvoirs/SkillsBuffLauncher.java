@@ -78,6 +78,7 @@ public class SkillsBuffLauncher implements OfficialPouvoir {
 		if(checkLaunch(myLauncher))
 		{
 			myCurrentPouvoir.setTarget(myLauncher.getSelectedPersonnage() == null ? myLauncher : myLauncher.getSelectedPersonnage());
+			myCurrentPouvoir.launch();
 			myCurrentTime = getLoadingTime();
 			myLauncher.changeEnergy(-getEnergyCost());
 			setPouvoir(getPouvoir());

@@ -64,17 +64,20 @@ public abstract class Personnage extends PassivePersonnage {
 				mySkills.put(skill, 1);
 		}
 		
+		myHealth = getSkillFix(ClasseSkill.VIE_TOTALE);
+		myEnergy = getSkillFix(ClasseSkill.ENERGIE_TOTALE);
+		myLevel = level;
+		myCapacity = capacity;
+		
+		if(pouvoirs == null)
+			return;
+		
 		int i = 0;
 		for(Class<? extends AttackPouvoir> type : pouvoirs)
 		{
 			myAttackPouvoirs[i] = newInstance(type);
 			i++;
 		}
-			
-		myHealth = getSkillFix(ClasseSkill.VIE_TOTALE);
-		myEnergy = getSkillFix(ClasseSkill.ENERGIE_TOTALE);
-		myLevel = level;
-		myCapacity = capacity;
 	}
 	
 	/**
@@ -271,13 +274,15 @@ public abstract class Personnage extends PassivePersonnage {
 		
 		// augmentation des armures
 		for(Armor a : getArmors())
-			boost += a.getIncrease(skill);
+			if(a != null)
+				boost += a.getIncrease(skill);
 		
 		// augmentation des armes
 		for(Weapon w : getWeapons())
-			boost += w.getIncrease(skill);
+			if(w != null)
+				boost += w.getIncrease(skill);
 		
-		return getTemporarySkill(skill) + boost;
+		return getSkillWithDependencies(skill) + boost;
 	}
 	
 	/**
@@ -561,6 +566,7 @@ public abstract class Personnage extends PassivePersonnage {
 			return false;
 		
 		myCurrentPouvoirs.add(sp);
+		sendMessage(myCurrentPouvoirs.toString());
 		return true;
 	}
 	

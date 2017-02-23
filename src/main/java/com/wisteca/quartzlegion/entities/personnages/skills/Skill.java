@@ -41,6 +41,25 @@ public interface Skill {
 	}
 	
 	/**
+	 * @param str le nom de la compétence à récupérer
+	 * @return la compétence portant le nom passé en paramètre
+	 * @throws IllegalArgumentException si la compétence n'existe pas
+	 */
+	
+	public static Skill valueOf(String str)
+	{
+		try {
+			
+			return ClasseSkill.valueOf(str);
+			
+		} catch(IllegalArgumentException ex) {
+			
+			return HabilitySkill.valueOf(str);
+			
+		}
+	}
+	
+	/**
 	 * Les compétences de classe augmentent ou définissent les capacités d'un personnage (voir les descriptions des compétences), elles dépendent des compétences d'habilitées (voir tableau),
 	 * par exemple si un joueur augmente sa compétence force de 100, toutes les compétences de classe qui dépendent de force vont être augmentées, la vie totale du joueur sera augmentée de 10,
 	 * sa parade de 20 etc... Les compétences de classe sont plus ou moins facile à augmenter (coût en points de compétences) d'après la classe du joueur, cela permet aux joueurs de telle ou

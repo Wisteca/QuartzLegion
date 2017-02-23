@@ -83,10 +83,15 @@ public interface OfficialPouvoir extends Pouvoir {
 		if(canLaunch() == false)
 		{
 			launcher.sendMessage(Channel.COMBAT, "Ce pouvoir n'est pas encore rechargé.");
+			return false;
 		}
 		
 		for(Skill skill : getRequirements().keySet())
 		{
+			System.out.println(getRequirements());
+			System.out.println(getRequirements().get(skill));
+			System.out.println(launcher);
+			System.out.println(launcher.getTemporarySkill(skill));
 			if(getRequirements().get(skill) > launcher.getTemporarySkill(skill))
 			{
 				launcher.sendMessage(Channel.COMBAT, "Vous n'avez pas les compétences requises pour utiliser ce pouvoir.");

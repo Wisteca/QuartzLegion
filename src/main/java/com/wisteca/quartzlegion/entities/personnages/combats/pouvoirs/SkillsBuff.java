@@ -53,11 +53,16 @@ public class SkillsBuff extends SpacePouvoir {
 		myModifiedSkills = new HashMap<>();
 		for(Skill skill : Skill.values())
 		{
+			int modification;
 			if(skills.hasAttribute(skill.toString()) == false)
-				continue;
+				modification = 0;
+			else
+				modification = Integer.valueOf(skills.getAttribute(skill.toString()));
 			
-			myModifiedSkills.put(skill, Integer.valueOf(skills.getAttribute(skill.toString())));
+			myModifiedSkills.put(skill, modification);
 		}
+		
+		System.out.println(myModifiedSkills);
 	}
 	
 	/**
