@@ -79,13 +79,7 @@ public abstract class AttackPouvoir implements OfficialPouvoir {
 	public abstract WeaponType getWeaponType();
 	
 	/**
-	 * @return une description du pouvoir
-	 */
-	
-	public abstract String toString();
-	
-	/**
-	 * @return le temps qu'il faut au pouvoir pour effectuer ses effets, ce temps est toujours le temps minimum de rechargement du pouvoir
+	 * @return le temps qu'il faut au pouvoir pour effectuer ses actions, ce temps est toujours le temps minimum de rechargement du pouvoir
 	 */
 	
 	public abstract int getDuration();
@@ -109,12 +103,11 @@ public abstract class AttackPouvoir implements OfficialPouvoir {
 	
 	public static AttackPouvoir getPouvoirByName(String name, Personnage launcher)
 	{
-		AttackPouvoir pouvoir;
 		for(Class<? extends AttackPouvoir> type : Constants.ATTACK_POUVOIR_LIST)
 		{
 			try {
 				
-				pouvoir = type.getConstructor(Personnage.class).newInstance(launcher);
+				AttackPouvoir pouvoir = type.getConstructor(Personnage.class).newInstance(launcher);
 				if(pouvoir.getName().equals(name))
 					return pouvoir;
 			

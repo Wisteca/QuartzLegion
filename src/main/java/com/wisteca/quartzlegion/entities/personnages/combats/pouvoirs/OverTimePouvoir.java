@@ -1,14 +1,10 @@
 package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.UUID;
-
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.data.Constants;
-import com.wisteca.quartzlegion.entities.PersonnageManager;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.utils.effects.Effect;
 
@@ -52,16 +48,14 @@ public abstract class OverTimePouvoir extends SpacePouvoir {
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
 		super.serialize(toWrite);
-		toWrite.setAttribute("betweenTime", Integer.toString(myBetweenTime));
-		toWrite.setAttribute("currentTime", Integer.toString(myCurrentTime));
+		((Element) toWrite.getElementsByTagName(getName().replace(' ', '_')).item(0)).setAttribute("currentTime", Integer.toString(myCurrentTime));
 	}
 	
 	@Override
 	public void deserialize(Element element)
 	{
 		super.deserialize(element);
-		myBetweenTime = Integer.valueOf(element.getAttribute("betweenTime"));
-		myCurrentTime = Integer.valueOf(element.getAttribute("currentTime"));
+		myCurrentTime = Integer.valueOf(((Element) element.getElementsByTagName(getName().replace(' ', '_')).item(0)).getAttribute("currentTime"));
 	}
 	
 	@Override
@@ -85,26 +79,23 @@ public abstract class OverTimePouvoir extends SpacePouvoir {
 	protected abstract void action();
 	
 	/**
-	 * Itère tous les DOT de la liste de la classe {@link Constants} et retourne une instance déserializée du pouvoir correspondant à l'élément.
-	 * @param element l'élément dans lequel un DOT à été sérializé auparavant
-	 * @return une instance déserializée du pouvoir
+	 * Itère tous les DOT de la liste de la classe {@link Constants} et retourne une instance désérialisée du pouvoir correspondant à l'élément.
+	 * @param name le nom du pouvoir à désérialisé
+	 * @param target le personnage ciblé par le DOT
+	 * @return une instance désérialisée du pouvoir ou null si aucun pouvoir ne porte le nom
 	 */
 	
-	public static OverTimePouvoir deserializePouvoir(Element element)
+	public static OverTimePouvoir getPouvoirByName(String name, Personnage target)
 	{
-		String name = element.getAttribute("name");
-		Personnage perso = (Personnage) PersonnageManager.getInstance().getPersonnage(UUID.fromString(element.getAttribute("personnage")));
-		
-		for(Class<?> clazz : Constants.OVERTIME_LIST)
+		for(Class<? extends OverTimePouvoir> clazz : Constants.OVERTIME_LIST)
 		{
 			try {
 				
-				String pouvoirName = (String) clazz.getMethod("getName").invoke(clazz.getConstructor(Personnage.class).newInstance(perso));
-				if(name.equals(pouvoirName))
-					return (OverTimePouvoir) clazz.getConstructor(Element.class).newInstance(element);
+				OverTimePouvoir op = clazz.getConstructor(Personnage.class).newInstance(target);
+				if(op.getName().equals(name))
+					return op;
 			
-			} catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-					| SecurityException | InstantiationException ex) {
+			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
 		}

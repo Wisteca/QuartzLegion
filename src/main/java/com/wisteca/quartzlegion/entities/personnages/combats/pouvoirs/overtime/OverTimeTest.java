@@ -7,14 +7,12 @@ public class OverTimeTest extends OverTimePouvoir {
 
 	public OverTimeTest(Personnage perso)
 	{
-		super(perso, 100, 10, 10, "le pouvoir de test !", null);
-		// TODO Auto-generated constructor stub
+		super(perso, 100, 10, 5, "POUVOIR DE TEST", null);
 	}
 
 	@Override
 	protected void action()
 	{
-		// TODO Auto-generated method stub
-		
+		getTarget().sendMessage("LOL");
 	}
 }

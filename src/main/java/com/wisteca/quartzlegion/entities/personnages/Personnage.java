@@ -1,6 +1,5 @@
 package com.wisteca.quartzlegion.entities.personnages;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -9,6 +8,7 @@ import java.util.UUID;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.personnages.combats.Damage;
@@ -17,6 +17,7 @@ import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon.WeaponType;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.AttackPouvoir;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.OverTimePouvoir;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SkillsBuff;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SpacePouvoir;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
@@ -97,8 +98,7 @@ public abstract class Personnage extends PassivePersonnage {
 			
 			return type.getConstructor(Personnage.class).newInstance(this);
 		
-		} catch(InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException ex) {
+		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
 		
@@ -113,8 +113,42 @@ public abstract class Personnage extends PassivePersonnage {
 	@Override
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
-		// TODO Auto-generated method stub
 		super.serialize(toWrite);
+		
+		toWrite.setAttribute("health", Integer.toString(myHealth));
+		toWrite.setAttribute("energy", Integer.toString(myEnergy));
+		toWrite.setAttribute("level", Integer.toString(myLevel));
+		
+		Element skills = toWrite.getOwnerDocument().createElement("skills");
+		toWrite.appendChild(skills);
+		
+		for(Skill skill : Skill.values())
+			if(getSkillFix(skill) != 1)
+				skills.setAttribute(skill.toString(), Integer.toString(getSkillFix(skill)));
+		
+		Element skillsBuffs = toWrite.getOwnerDocument().createElement("skillsBuffs");
+		toWrite.appendChild(skillsBuffs);
+		
+		Element overTime = toWrite.getOwnerDocument().createElement("overTimePouvoirs");
+		toWrite.appendChild(overTime);
+		
+		for(SpacePouvoir sp : myCurrentPouvoirs)
+			if(sp instanceof SkillsBuff)
+				sp.serialize(skillsBuffs);
+			else
+				sp.serialize(overTime);
+		
+		Element attackPouvoirs = toWrite.getOwnerDocument().createElement("attackPouvoirs");
+		toWrite.appendChild(attackPouvoirs);
+		
+		for(AttackPouvoir ap : myAttackPouvoirs)
+		{
+			if(ap == null)
+				continue;
+			
+			Element pouvoir = toWrite.getOwnerDocument().createElement(ap.getName());
+			attackPouvoirs.appendChild(pouvoir);
+		}
 	}
 	
 	/**
@@ -125,8 +159,35 @@ public abstract class Personnage extends PassivePersonnage {
 	@Override
 	public void deserialize(Element element)
 	{
-		// TODO Auto-generated method stub
 		super.deserialize(element);
+		
+		mySkills = new HashMap<>();
+		Element skills = (Element) element.getElementsByTagName("skills").item(0);
+		for(Skill skill : Skill.values())
+			if(skills.hasAttribute(skill.toString()))
+				mySkills.put(skill, Integer.valueOf(skills.getAttribute(skill.toString())));
+			else
+				mySkills.put(skill, 1);
+		
+		myCurrentPouvoirs = new ArrayList<>();
+		Element skillsBuffs = (Element) element.getElementsByTagName("skillsBuffs").item(0);
+		NodeList buffList = skillsBuffs.getChildNodes();
+		for(int i = 0 ; i < buffList.getLength() ; i++)
+			if(buffList.item(i) instanceof Element)
+				myCurrentPouvoirs.add(new SkillsBuff((Element) buffList.item(i)));
+		
+		myAttackPouvoirs = new AttackPouvoir[8];
+		Element attackPouvoirs = (Element) element.getElementsByTagName("attackPouvoirs").item(0);
+		NodeList attackList = attackPouvoirs.getChildNodes();
+		for(int i = 0 ; i < attackList.getLength() ; i++)
+			if(attackList.item(i) instanceof Element)
+				myAttackPouvoirs[i] = AttackPouvoir.getPouvoirByName(attackList.item(i).getNodeName().replace('_', ' '), this);
+		
+		Element overTime = (Element) element.getElementsByTagName("overTimePouvoirs").item(0);
+		NodeList DOTList = overTime.getChildNodes();
+		for(int i = 0 ; i < DOTList.getLength() ; i++)
+			if(DOTList.item(i) instanceof Element)
+				myCurrentPouvoirs.add(OverTimePouvoir.getPouvoirByName(DOTList.item(i).getNodeName().replace('_', ' '), this));
 	}
 	
 	/**
@@ -566,7 +627,6 @@ public abstract class Personnage extends PassivePersonnage {
 			return false;
 		
 		myCurrentPouvoirs.add(sp);
-		sendMessage(myCurrentPouvoirs.toString());
 		return true;
 	}
 	

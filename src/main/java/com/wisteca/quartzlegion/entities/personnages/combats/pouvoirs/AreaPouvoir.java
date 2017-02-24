@@ -36,10 +36,11 @@ public abstract class AreaPouvoir extends AttackPouvoir {
 			launchLoc = getAttacker().getLocation();
 		else
 		{
-			for(int distance = 0 ; distance <= 50 ; distance++)
+			for(int distance = 1 ; distance <= getMaxLaunchDistance() ; distance++)
 			{
-				Location loc = getAttacker().getEyeLocation().getDirection().multiply(distance).toLocation(getAttacker().getWorld());
-				if(loc.getBlock().equals(Material.AIR) == false)
+				Location loc = getAttacker().getEyeLocation().add(getAttacker().getEyeLocation().getDirection().multiply(distance));
+				getAttacker().sendMessage("block : " + loc.getBlock().getType());
+				if(loc.getBlock().getType().equals(Material.AIR) == false)
 				{
 					launchLoc = loc;
 					break;
@@ -56,6 +57,12 @@ public abstract class AreaPouvoir extends AttackPouvoir {
 		launchAt(launchLoc);
 		return true;
 	}
+	
+	/**
+	 * @return la distance maximum à laquelle le personnage peut lancer le pouvoir
+	 */
+	
+	public abstract int getMaxLaunchDistance();
 	
 	/**
 	 * Méthode à redéfinir dans les classes filles appelée quand un pouvoir est lancé.

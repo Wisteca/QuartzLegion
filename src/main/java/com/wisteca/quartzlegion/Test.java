@@ -1,6 +1,7 @@
 package com.wisteca.quartzlegion;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,15 +19,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.PersonnageManager;
+import com.wisteca.quartzlegion.entities.personnages.Joueur;
 import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon.WeaponType;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.AttackPouvoir;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.OverTimePouvoir;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SkillsBuffLauncher;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
@@ -57,7 +62,69 @@ public class Test implements CommandExecutor {
 		
 		switch(args[0])
 		{
-			case "launch" :
+			case "deserializePersonnage" :
+				
+				try {
+					
+					Document test = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File(Constants.getServerFolderPath() + "/test.xml"));
+					PersonnageManager.getInstance().removePersonnage(perso.getUniqueId());
+					PersonnageManager.getInstance().addPersonnage(new Joueur(test.getDocumentElement(), p));
+					
+				} catch(SAXException | IOException | ParserConfigurationException ex) {
+					ex.printStackTrace();
+				}
+				
+				break;
+			
+			case "serializePersonnage" :
+				
+				try {
+				
+					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+					Element pouvoir = doc.createElement("test");
+					doc.appendChild(pouvoir);
+					perso.serialize(pouvoir);
+					
+					final Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			        final DOMSource source = new DOMSource(doc);
+			        final StreamResult sortie = new StreamResult(new File(Constants.getServerFolderPath() + "/test.xml"));
+			        transformer.setOutputProperty(OutputKeys.VERSION, "1.0");
+			        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");         
+			        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+			        transformer.transform(source, sortie);
+				
+				} catch(Exception ex) {
+					ex.printStackTrace();
+				}
+		        
+				break;
+			
+			case "DOT" :
+				
+				OverTimePouvoir dot = OverTimePouvoir.getPouvoirByName("POUVOIR DE TEST", perso);
+				dot.launch();
+				perso.sendMessage("lancé !");
+				
+				Bukkit.getScheduler().scheduleSyncRepeatingTask(MainClass.getInstance(), new Runnable() {
+					
+					@Override
+					public void run()
+					{
+						perso.doTime();
+					}
+					
+				}, 0, 1);
+				
+				break;
+			
+			case "attack" :
+				
+				AttackPouvoir.getPouvoirByName("AttackTest1", perso).launch();
+				
+				break;
+			
+			case "launchBuff" :
 				
 				if(myLauncher == null)
 				{
@@ -78,19 +145,19 @@ public class Test implements CommandExecutor {
 						Bukkit.broadcastMessage(pp.getName());
 					
 					myLauncher = new SkillsBuffLauncher("Iron_Speed", (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId()));
-					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-					Element pouvoir = doc.createElement("test");
-					doc.appendChild(pouvoir);
-					myLauncher.serialize(pouvoir);
+					Document doc1 = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+					Element pouvoir1 = doc1.createElement("test");
+					doc1.appendChild(pouvoir1);
+					myLauncher.serialize(pouvoir1);
 					
-					final Transformer transformer = TransformerFactory.newInstance().newTransformer();
-			        final DOMSource source = new DOMSource(doc);
-			        final StreamResult sortie = new StreamResult(new File(Constants.getServerFolderPath() + "/test.xml"));
-			        transformer.setOutputProperty(OutputKeys.VERSION, "1.0");
-			        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");         
-			        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-			        transformer.transform(source, sortie);
+					final Transformer transformer1 = TransformerFactory.newInstance().newTransformer();
+			        final DOMSource source1 = new DOMSource(doc1);
+			        final StreamResult sortie1 = new StreamResult(new File(Constants.getServerFolderPath() + "/test.xml"));
+			        transformer1.setOutputProperty(OutputKeys.VERSION, "1.0");
+			        transformer1.setOutputProperty(OutputKeys.ENCODING, "UTF-8");         
+			        transformer1.setOutputProperty(OutputKeys.INDENT, "yes");
+			        transformer1.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+			        transformer1.transform(source1, sortie1);
 				
 				} catch(ParserConfigurationException | TransformerException ex) {
 					ex.printStackTrace();

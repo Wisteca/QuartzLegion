@@ -61,8 +61,6 @@ public class SkillsBuff extends SpacePouvoir {
 			
 			myModifiedSkills.put(skill, modification);
 		}
-		
-		System.out.println(myModifiedSkills);
 	}
 	
 	/**

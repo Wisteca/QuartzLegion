@@ -20,6 +20,7 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
+import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
 
@@ -34,6 +35,12 @@ public class Joueur extends Personnage {
 		super(uuid, race, classe, null, null, null, null, 0, 100);
 		myPlayer = player;
 		
+	}
+	
+	public Joueur(Element element, Player p)
+	{
+		super(element);
+		myPlayer = p;
 	}
 
 	@Override
