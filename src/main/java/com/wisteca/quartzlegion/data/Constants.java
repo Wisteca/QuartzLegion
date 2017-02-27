@@ -23,6 +23,8 @@ import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.AttackPouv
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.OverTimePouvoir;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.attack.AttackTest1;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.overtime.OverTimeTest;
+import com.wisteca.quartzlegion.utils.effects.Effect;
+import com.wisteca.quartzlegion.utils.effects.SphereEffect;
 
 /**
  * Classe static servant à récupérer quelques informations de base comme des chemins d'accès à des fichiers.
@@ -66,6 +68,12 @@ public class Constants {
 	 */
 	
 	public final static ArrayList<Class<? extends OverTimePouvoir>> OVERTIME_LIST = new ArrayList<>(Arrays.asList(OverTimeTest.class));
+	
+	/**
+	 * Liste des effets, ils doivent tous être enregistrés dans cette liste pour pouvoir être désérialisé !
+	 */
+	
+	public final static ArrayList<Class<? extends Effect>> EFFECTS_LIST = new ArrayList<>(Arrays.asList(SphereEffect.class));
 	
 	/**
 	 * Méthode appelée au démarrage du plugin pour effectuer divers opérations comme la mise en place des fichiers si ils sont inexistants.

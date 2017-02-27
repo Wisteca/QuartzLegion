@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.bukkit.Bukkit;
 import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.data.Constants;
@@ -12,6 +11,11 @@ import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.utils.Item;
+
+/**
+ * Permet de lancer des buffs de compétences.
+ * @author Wisteca
+ */
 
 public class SkillsBuffLauncher implements OfficialPouvoir {
 	
@@ -24,20 +28,33 @@ public class SkillsBuffLauncher implements OfficialPouvoir {
 	private HashMap<Skill, Integer> myRequirements;
 	private Classe myRequiredClasse;
 	
+	/**
+	 * @param pouvoirName le nom du buff de compétences
+	 * @param launcher le personnage qui lancera le pouvoir
+	 */
+	
 	public SkillsBuffLauncher(String pouvoirName, Personnage launcher)
 	{
 		myLauncher = launcher;
 		setPouvoir(pouvoirName);
 	}
 	
+	/**
+	 * @return le lanceur du pouvoir
+	 */
+	
 	public Personnage getLauncher()
 	{
 		return myLauncher;
 	}
 	
+	/**
+	 * Change le pouvoir que le lanceur lancera. Créer une nouvelle instance désérialisée de ce pouvoir.
+	 * @param pouvoirName le nom du nouveau pouvoir
+	 */
+	
 	public void setPouvoir(String pouvoirName)
 	{
-		Bukkit.broadcastMessage(Constants.POUVOIRS_DOCUMENT.toString());
 		Element state = (Element) Constants.POUVOIRS_DOCUMENT.getElementsByTagName(pouvoirName.replace(' ', '_')).item(0);
 		
 		myDescription = state.getAttribute("description");
@@ -62,10 +79,18 @@ public class SkillsBuffLauncher implements OfficialPouvoir {
 		myCurrentPouvoir = new SkillsBuff(stateCopy);
 	}
 	
+	/**
+	 * @return le nom du pouvoir que le lanceur lance
+	 */
+	
 	public String getPouvoir()
 	{
 		return myCurrentPouvoir.getName();
 	}
+	
+	/**
+	 * @return l'instance en attente d'être lancée par le lanceur
+	 */
 	
 	public SkillsBuff getCurrentPouvoir()
 	{

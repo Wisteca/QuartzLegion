@@ -2,6 +2,8 @@ package com.wisteca.quartzlegion;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -13,6 +15,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -62,6 +65,29 @@ public class Test implements CommandExecutor {
 		
 		switch(args[0])
 		{
+			case "particles" :
+				
+				if(args.length != 8)
+				{
+					p.sendMessage("test particles particle extension increase counts layers particlesPerLayer betweenTime");
+					return true;
+				}
+					
+				SphereEffect e = new SphereEffect("LETEST", new ArrayList<>(Arrays.asList(Particle.valueOf(args[1]))), Double.valueOf(args[2]), Double.valueOf(args[3]), Integer.valueOf(args[4]), Integer.valueOf(args[5]), Integer.valueOf(args[6]), Integer.valueOf(args[7]));
+				e.launch(p.getLocation().add(0, 1, 0));
+				
+				Bukkit.getScheduler().scheduleSyncRepeatingTask(MainClass.getInstance(), new Runnable() {
+					
+					@Override
+					public void run()
+					{
+						e.doTime();
+					}
+					
+				}, 0, 1);
+				
+				break;
+			
 			case "deserializePersonnage" :
 				
 				try {
@@ -132,8 +158,18 @@ public class Test implements CommandExecutor {
 					return true;
 				}
 				
-				p.sendMessage(myLauncher.getLauncher().getName());
 				myLauncher.launch();
+				
+				Bukkit.getScheduler().scheduleSyncRepeatingTask(MainClass.getInstance(), new Runnable() {
+					
+					@Override
+					public void run()
+					{
+						perso.doTime();
+						myLauncher.doTime();
+					}
+					
+				}, 0, 1);
 				
 				break;
 			
@@ -189,14 +225,11 @@ public class Test implements CommandExecutor {
 				
 				break;
 			
-			case "changeEnergie" :
+			case "changeEnergy" :
 				
 				perso.changeEnergy(Integer.valueOf(args[1]));
+				perso.sendMessage("énergie : " + perso.getEnergy());
 				
-				break;
-				
-			case "particle":
-				new SphereEffect().launch(p.getLocation().add(0, 1, 0));
 				break;
 			
 			case "weapon":

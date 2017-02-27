@@ -90,6 +90,9 @@ public abstract class SpacePouvoir implements Pouvoir {
 		{
 			myRemainingTime = myTotalTime;
 			myTarget.addSpacePouvoir(this);
+			if(myEffect != null)
+				myEffect.launch(myTarget.getLocation().add(0, 1, 0));
+			
 			return true;
 		}
 		
