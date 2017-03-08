@@ -279,6 +279,7 @@ public class Item implements Serializer {
 	@Override
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
+		Utils.removeElementIfExist(toWrite, "item");
 		Element item = toWrite.getOwnerDocument().createElement("item");
 		toWrite.appendChild(item);
 		

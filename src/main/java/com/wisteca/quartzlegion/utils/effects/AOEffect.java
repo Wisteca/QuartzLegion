@@ -9,6 +9,8 @@ import org.bukkit.Particle;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.wisteca.quartzlegion.utils.Utils;
+
 /**
  * Anarchy Online Effects, superclass représentant quelques effets tirés d'Anarchy Online.
  * @author Wisteca
@@ -44,9 +46,11 @@ public abstract class AOEffect implements Effect {
 	@Override
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
+		Utils.removeElementIfExist(toWrite, myName.replace(' ', '_'));
 		Element effect = toWrite.getOwnerDocument().createElement(myName.replace(' ', '_'));
 		toWrite.appendChild(effect);
 		
+		Utils.removeElementIfExist(toWrite, "particles");
 		Element particles = toWrite.getOwnerDocument().createElement("particles");
 		effect.appendChild(particles);
 		for(Particle pa : myParticles)

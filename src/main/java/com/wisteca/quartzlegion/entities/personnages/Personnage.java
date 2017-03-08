@@ -23,6 +23,7 @@ import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SpacePouvo
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.HabilitySkill;
+import com.wisteca.quartzlegion.utils.Utils;
 
 /**
  * Le personnage est capable de se battre, il peux utiliser ses armes et avoir des pouvoirs.
@@ -37,6 +38,29 @@ public abstract class Personnage extends PassivePersonnage {
 	private AttackPouvoir[] myAttackPouvoirs = new AttackPouvoir[8]; // pouvoirs d'attaque
 	private IntelligentPersonnage[] myPets = new IntelligentPersonnage[3]; // "animaux" de compagnie
 	private Personnage mySelectedPersonnage; // personnage séléctionné, non sérializé
+	
+	/**
+	 * Construire un personnage avec des valeurs pas défaut.
+	 * @param uuid l'uuid du personnage
+	 */
+	
+	public Personnage(UUID uuid)
+	{
+		super(uuid);
+		
+		myHealth = 20;
+		myEnergy = 20;
+		myLevel = 1;
+		myCapacity = 100;
+		
+		for(Skill skill : Skill.values())
+		{
+			if(skill.equals(ClasseSkill.VIE_TOTALE) || skill.equals(ClasseSkill.ENERGIE_TOTALE))
+				mySkills.put(skill, 20);
+			else
+				mySkills.put(skill, 1);
+		}
+	}
 	
 	/**
 	 * Construire un personnage en spécifiant chaque attribut
@@ -119,16 +143,19 @@ public abstract class Personnage extends PassivePersonnage {
 		toWrite.setAttribute("energy", Integer.toString(myEnergy));
 		toWrite.setAttribute("level", Integer.toString(myLevel));
 		
-		Element skills = toWrite.getOwnerDocument().createElement("skills");
+		Utils.removeElementIfExist(toWrite, "skills");
+		Element	skills = toWrite.getOwnerDocument().createElement("skills");
 		toWrite.appendChild(skills);
 		
 		for(Skill skill : Skill.values())
 			if(getSkillFix(skill) != 1)
 				skills.setAttribute(skill.toString(), Integer.toString(getSkillFix(skill)));
 		
+		Utils.removeElementIfExist(toWrite, "skillsBuffs");
 		Element skillsBuffs = toWrite.getOwnerDocument().createElement("skillsBuffs");
 		toWrite.appendChild(skillsBuffs);
 		
+		Utils.removeElementIfExist(toWrite, "overTimePouvoirs");
 		Element overTime = toWrite.getOwnerDocument().createElement("overTimePouvoirs");
 		toWrite.appendChild(overTime);
 		
@@ -138,6 +165,7 @@ public abstract class Personnage extends PassivePersonnage {
 			else
 				sp.serialize(overTime);
 		
+		Utils.removeElementIfExist(toWrite, "attackPouvoirs");
 		Element attackPouvoirs = toWrite.getOwnerDocument().createElement("attackPouvoirs");
 		toWrite.appendChild(attackPouvoirs);
 		
@@ -152,14 +180,18 @@ public abstract class Personnage extends PassivePersonnage {
 	}
 	
 	/**
-	 * Déserializer un personnage, méthode appelée par le constructeur
-	 * @param element l'élément dans lequel un personnage a été sérializé auparavant
+	 * Désérialiser un personnage, méthode appelée par le constructeur
+	 * @param element l'élément dans lequel un personnage a été sérialisé auparavant
 	 */
 	
 	@Override
 	public void deserialize(Element element)
 	{
 		super.deserialize(element);
+		
+		myHealth = Integer.valueOf(element.getAttribute("health"));
+		myEnergy = Integer.valueOf(element.getAttribute("energy"));
+		myLevel = Integer.valueOf(element.getAttribute("level"));
 		
 		mySkills = new HashMap<>();
 		Element skills = (Element) element.getElementsByTagName("skills").item(0);
@@ -197,7 +229,11 @@ public abstract class Personnage extends PassivePersonnage {
 	
 	public void changeHealth(int health)
 	{
-		myHealth += health;
+		if(myHealth + health >= getTemporarySkill(ClasseSkill.VIE_TOTALE))
+			myHealth = getTemporarySkill(ClasseSkill.VIE_TOTALE);
+		else
+			myHealth += health;
+		
 		healthChanged();
 	}
 	
@@ -234,7 +270,11 @@ public abstract class Personnage extends PassivePersonnage {
 	
 	public void changeEnergy(int energy)
 	{
-		myEnergy += energy;
+		if(myEnergy + energy >= getTemporarySkill(ClasseSkill.ENERGIE_TOTALE))
+			myEnergy = getTemporarySkill(ClasseSkill.ENERGIE_TOTALE);
+		else
+			myEnergy += energy;
+		
 		energyChanged();
 	}
 	

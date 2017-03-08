@@ -10,6 +10,7 @@ import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.utils.Item;
 import com.wisteca.quartzlegion.utils.ItemType;
+import com.wisteca.quartzlegion.utils.Utils;
 
 /**
  * Représente un équipement comme une arme ou une armure.
@@ -219,6 +220,7 @@ public abstract class Equipment extends Item {
 		super.serialize(toWrite);
 		((Element) toWrite.getElementsByTagName("item").item(0)).removeAttribute("lore");
 		
+		Utils.removeElementIfExist(toWrite, "equipment");
 		Element equipment = toWrite.getOwnerDocument().createElement("equipment");
 		toWrite.appendChild(equipment);
 		
@@ -226,12 +228,14 @@ public abstract class Equipment extends Item {
 		equipment.setAttribute("requiredLevel", Integer.toString(getRequiredLevel()));
 		equipment.setAttribute("requiredClasse", getRequiredClasse().toString());
 		
+		Utils.removeElementIfExist(toWrite, "requirements");
 		Element requirements = toWrite.getOwnerDocument().createElement("requirements");
 		equipment.appendChild(requirements);
 		
 		for(Skill skill : myRequirements.keySet())
 			requirements.setAttribute(skill.toString(), Integer.toString(myRequirements.get(skill)));
 			
+		Utils.removeElementIfExist(toWrite, "increases");
 		Element increases = toWrite.getOwnerDocument().createElement("increases");
 		equipment.appendChild(increases);
 		

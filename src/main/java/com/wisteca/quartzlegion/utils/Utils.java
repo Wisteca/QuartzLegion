@@ -3,6 +3,10 @@ package com.wisteca.quartzlegion.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 /**
  * Une classe static qui regroupe des méthodes utiles.
  * @author Wisteca
@@ -36,5 +40,22 @@ public class Utils {
 		}
 		
 		return textWithLineFeed;
+	}
+	
+	/**
+	 * Supprimer un élément si il existe dans ce noeud.
+	 * @param parent le noeud parent, dans lequel l'élément à supprimer se touve
+	 * @param name le nom de l'élément à supprimer
+	 */
+	
+	public static void removeElementIfExist(Element parent, String name)
+	{
+		NodeList list = parent.getChildNodes();
+		for(int i = 0 ; i < list.getLength() ; i++)
+		{
+			Node node = list.item(i);
+			if(node.getNodeName().equals(name))
+				parent.removeChild(node);
+		}				
 	}
 }

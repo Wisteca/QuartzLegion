@@ -2,7 +2,6 @@ package com.wisteca.quartzlegion;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.PersonnageManager;
 
 /**
@@ -19,7 +18,14 @@ public class MainClass extends JavaPlugin {
 	{
 		myInstance = this;
 		
-		Constants.init();
+		try {
+			
+			Class.forName("com.wisteca.quartzlegion.data.Constants"); // initialisation de la classe
+			
+		} catch(ClassNotFoundException ex) {
+			ex.printStackTrace();
+		}
+		
 		new PersonnageManager();
 		
 		getCommand("test").setExecutor(new Test());

@@ -241,6 +241,7 @@ public class Weapon extends Equipment {
 		toWrite.setAttribute("criticalLuck", Integer.toString(getCriticalLuck()));
 		toWrite.setAttribute("criticalDamages", Integer.toString(getCriticalDamages()));
 		
+		Utils.removeElementIfExist(toWrite, "damages");
 		Element damages = toWrite.getOwnerDocument().createElement("damages");
 		toWrite.appendChild(damages);
 		

@@ -1,7 +1,6 @@
 package com.wisteca.quartzlegion;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -22,11 +21,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
+import com.wisteca.quartzlegion.data.Accessor;
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.PersonnageManager;
-import com.wisteca.quartzlegion.entities.personnages.Joueur;
 import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
@@ -65,6 +63,34 @@ public class Test implements CommandExecutor {
 		
 		switch(args[0])
 		{
+			case "bdd" :
+				
+				Document document = null;
+				
+				try {
+					
+					document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+					document.appendChild(document.createElement("personnage"));
+					perso.serialize(document.getDocumentElement());
+				
+					Accessor access = Accessor.createNewAccessor();
+					System.out.println(access.isCreated(perso.getUniqueId()));
+					access.create(perso.getUniqueId(), document.getDocumentElement());
+					System.out.println(access.isCreated(perso.getUniqueId()));
+					
+					perso.setLevel(85);
+					perso.changeSkillFix(ClasseSkill.ENERGIE_TOTALE, 85);
+					perso.changeEnergy(54);
+					perso.serialize(document.getDocumentElement());
+					access.setXML(perso.getUniqueId(), document.getDocumentElement());
+					access.getXML(perso.getUniqueId());
+				
+				} catch(ParserConfigurationException ex) {
+					ex.printStackTrace();
+				}
+				
+				break;
+			
 			case "particles" :
 				
 				if(args.length != 8)
@@ -88,19 +114,7 @@ public class Test implements CommandExecutor {
 				
 				break;
 			
-			case "deserializePersonnage" :
-				
-				try {
-					
-					Document test = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new File(Constants.getServerFolderPath() + "/test.xml"));
-					PersonnageManager.getInstance().removePersonnage(perso.getUniqueId());
-					PersonnageManager.getInstance().addPersonnage(new Joueur(test.getDocumentElement(), p));
-					
-				} catch(SAXException | IOException | ParserConfigurationException ex) {
-					ex.printStackTrace();
-				}
-				
-				break;
+			
 			
 			case "serializePersonnage" :
 				

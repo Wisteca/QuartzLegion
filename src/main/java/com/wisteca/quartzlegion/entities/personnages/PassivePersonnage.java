@@ -16,6 +16,7 @@ import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Race;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
+import com.wisteca.quartzlegion.utils.Utils;
 
 /**
  * Classe de base de chaque entités, représente une entité décorative et incapable de se battre, possède des armes pour la décoration !
@@ -29,6 +30,20 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	private Race myRace;
 	private Classe myClasse;
 	private UUID myUniqueId;
+	
+	/**
+	 * Construire un PassivePersonnage avec des valeurs par défaut.
+	 * @param uuid l'uuid du passivePersonnage
+	 */
+	
+	public PassivePersonnage(UUID uuid)
+	{
+		myUniqueId = uuid;
+		myRace = Race.AUCUN;
+		myClasse = Classe.AUCUN;
+		
+		PersonnageManager.getInstance().addPersonnage(this);
+	}
 	
 	/**
 	 * Construire un objet en spécifiant chaque paramètres.
@@ -184,8 +199,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	 * @param e l'événement en question
 	 */
 	
-	public void onEvent(Event e)
-	{}
+	public abstract void onEvent(Event e);
 	
 	/**
 	 * Méthode appelée chaque ticks (20 fois par secondes), peut être redéfinie pour faire des checks régulier ou autre.
@@ -204,10 +218,11 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	@Override
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
-		toWrite.setAttribute("uuid", getUniqueId().toString());
-		toWrite.setAttribute("race", getRace().toString());
-		toWrite.setAttribute("classe", getClasse().toString());
+		toWrite.setAttribute("uuid", myUniqueId.toString());
+		toWrite.setAttribute("race", myRace.toString());
+		toWrite.setAttribute("classe", myClasse.toString());
 		
+		Utils.removeElementIfExist(toWrite, "weapons");
 		Element weapons = toWrite.getOwnerDocument().createElement("weapons");
 		toWrite.appendChild(weapons);
 		
@@ -221,6 +236,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 			weapon.serialize(weaponElement);
 		}
 		
+		Utils.removeElementIfExist(toWrite, "armors");
 		Element armors = toWrite.getOwnerDocument().createElement("armors");
 		toWrite.appendChild(armors);
 		

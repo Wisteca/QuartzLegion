@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.PersonnageManager;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
+import com.wisteca.quartzlegion.utils.Utils;
 import com.wisteca.quartzlegion.utils.effects.Effect;
 
 /**
@@ -54,6 +55,7 @@ public abstract class SpacePouvoir implements Pouvoir {
 	@Override
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
+		Utils.removeElementIfExist(toWrite, myName.replace(' ', '_'));
 		Element pouvoir = toWrite.getOwnerDocument().createElement(myName.replace(' ', '_'));
 		toWrite.appendChild(pouvoir);
 		pouvoir.setAttribute("remainingTime", Integer.toString(myRemainingTime));

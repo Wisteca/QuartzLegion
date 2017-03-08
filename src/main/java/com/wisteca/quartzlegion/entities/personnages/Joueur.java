@@ -2,65 +2,99 @@ package com.wisteca.quartzlegion.entities.personnages;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.bukkit.Bukkit;
 import org.bukkit.EntityEffect;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import org.w3c.dom.Element;
+import org.w3c.dom.Document;
 
+import com.wisteca.quartzlegion.MainClass;
+import com.wisteca.quartzlegion.data.Accessor;
+import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
 
 public class Joueur extends Personnage {
 
+	private static Accessor myAccess = Accessor.createNewAccessor();
+	
 	private Player myPlayer;
-	
+	private Document myDocument;
 	private int mySerializeTime = 0;
+	private Task myTask;
 	
-	public Joueur(UUID uuid, Race race, Classe classe, Player player)
+	private BossBar myEnergyBar;
+	private Clan myClan;
+	private Grade myGrade;
+	
+	public Joueur(Player player)
 	{
-		super(uuid, race, classe, null, null, null, null, 0, 100);
-		myPlayer = player;
+		super(player.getUniqueId());
 		
-	}
-	
-	public Joueur(Element element, Player p)
-	{
-		super(element);
-		myPlayer = p;
+		myPlayer = player;
+		myEnergyBar = Bukkit.createBossBar("ENERGIE", BarColor.BLUE, BarStyle.SOLID);
+		myEnergyBar.addPlayer(myPlayer);
+		myEnergyBar.setVisible(true);
+		myTask = new Task(); // PAS CREER LA TASK AVANT LE DOCUMENT
+		
+		try {
+			
+			myDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			myDocument.appendChild(myDocument.createElement("joueur"));
+		
+			if(myAccess.isCreated(player.getUniqueId()))
+			{	// le joueur s'est déjà connecté et il possède un champ dans la bdd
+				deserialize(myAccess.getXML(player.getUniqueId()));
+				serialize(myDocument.getDocumentElement());
+				Bukkit.broadcastMessage("Connexion de " + myPlayer.getName() + ", désérialisation terminé !");
+			}
+			else
+			{	// premiere connexion du joueur
+				serialize(myDocument.getDocumentElement());
+				myAccess.create(player.getUniqueId(), myDocument.getDocumentElement());
+				Bukkit.broadcastMessage("Première arrivée de " + myPlayer.getName());
+				// FAIRE LE TUTO POUR LES NOUVEAUX JOUEURS !
+			}
+			
+			healthChanged();
+			energyChanged();
+			
+		} catch(ParserConfigurationException ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	@Override
 	protected void healthChanged()
 	{
-		if(getHealth() != 0)
-		{
-			if(myPlayer.getGameMode().equals(GameMode.SPECTATOR))
-				myPlayer.setGameMode(GameMode.SURVIVAL);
-			else
-				myPlayer.setHealth(getHealth() / getTemporarySkill(ClasseSkill.VIE_TOTALE) * 20);
-		}
-		else if(myPlayer.getGameMode().equals(GameMode.SPECTATOR))
-			myPlayer.setGameMode(GameMode.SURVIVAL);
+		myPlayer.setHealth(getHealth() / getTemporarySkill(ClasseSkill.VIE_TOTALE) * 20);
 	}
 
 	@Override
 	protected void energyChanged()
 	{
-		
+		myEnergyBar.setProgress((double) getEnergy() / getTemporarySkill(ClasseSkill.ENERGIE_TOTALE));
 	}
 
 	@Override
@@ -78,10 +112,127 @@ public class Joueur extends Personnage {
 		if(mySerializeTime > 6000)
 		{
 			mySerializeTime = 0;
-			/*
-			 * SERIALIZER
-			 */
+			saveProgress();
 		}
+	}
+	
+	@Override
+	public void onEvent(Event e)
+	{
+		if(e instanceof PlayerQuitEvent)
+		{
+			saveProgress();
+			myTask.cancel();
+			Bukkit.broadcastMessage("Déconnexion de " + myPlayer.getName());
+		}
+	}
+	
+	private void saveProgress() // sauvegarder la progression du joueur dans la BDD
+	{
+		try {
+			
+			sendMessage(Channel.INFO, "Sauvegarde de votre progression ...");
+			serialize(myDocument.getDocumentElement());
+			myAccess.setXML(myPlayer.getUniqueId(), myDocument.getDocumentElement());
+		
+		} catch(ParserConfigurationException ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public void setClan(Clan clan)
+	{
+		
+	}
+	
+	public Clan getClan()
+	{
+		return null;
+	}
+	
+	public void setGrade(Grade grade)
+	{
+		
+	}
+	
+	public Grade getGrade()
+	{
+		return null;
+	}
+	
+	public void addXp(int xp)
+	{
+		
+	}
+	
+	public void removeXp(int xp)
+	{
+		
+	}
+	
+	public void showEnergyBar(boolean show)
+	{
+		myEnergyBar.setVisible(show);
+	}
+	
+	public boolean isShowingEnergyBar()
+	{
+		return myEnergyBar.isVisible();
+	}
+	
+	public void setChannel(Channel ch)
+	{
+		
+	}
+	
+	public Channel getChannel()
+	{
+		return null;
+	}
+	
+	public void changeSkillPoints(int points)
+	{
+		
+	}
+	
+	public int getSkillPoints()
+	{
+		return 0;
+	}
+	
+	public int getSkillPointsCost(Skill skill)
+	{
+		return 0;
+	}
+	
+	private class Task extends BukkitRunnable {
+		
+		public Task()
+		{
+			this.runTaskTimer(MainClass.getInstance(), 1, 1);
+		}
+		
+		@Override
+		public void run()
+		{
+			doTime();
+		}
+	}
+	
+	public static enum Grade {
+		
+		Inconnue,
+		Vagabond,
+		Citoyen,
+		Citadin;
+	}
+	
+	public static enum Clan {
+	
+		Aucun, 
+		Conquistador, 
+		Pirate,
+		Rebelle;
 	}
 	
 	/*

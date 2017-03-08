@@ -11,12 +11,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.wisteca.quartzlegion.MainClass;
 import com.wisteca.quartzlegion.entities.personnages.Joueur;
 import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
-import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
-import com.wisteca.quartzlegion.entities.personnages.Personnage.Race;
 
 public class PersonnageManager implements Listener {
 	
@@ -38,7 +37,7 @@ public class PersonnageManager implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, MainClass.getInstance());
 		
 		for(Player pls : Bukkit.getOnlinePlayers())
-			new Joueur(pls.getUniqueId(), Race.DRAKEIDE, Classe.ASSASSIN, pls);
+			new Joueur(pls);
 	}
 	
 	/**
@@ -105,7 +104,13 @@ public class PersonnageManager implements Listener {
 	public void onJoin(PlayerJoinEvent e)
 	{
 		Player p = e.getPlayer();
-		new Joueur(p.getUniqueId(), Race.DRAKEIDE, Classe.ASSASSIN, p);
+		new Joueur(p);
+	}
+	
+	@EventHandler
+	public void onQuit(PlayerQuitEvent e)
+	{
+		onEvent(e.getPlayer(), e);
 	}
 	
 	@EventHandler

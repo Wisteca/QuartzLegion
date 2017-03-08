@@ -10,6 +10,7 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.metadata.MetadataValue;
@@ -571,5 +572,12 @@ public class IntelligentPersonnage extends Personnage {
 	{
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void onEvent(Event e)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 }

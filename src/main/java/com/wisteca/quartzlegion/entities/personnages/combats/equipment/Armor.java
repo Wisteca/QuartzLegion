@@ -145,6 +145,7 @@ public class Armor extends Equipment {
 	{
 		super.serialize(toWrite);
 		
+		Utils.removeElementIfExist(toWrite, "protection");
 		Element protection = toWrite.getOwnerDocument().createElement("protection");
 		toWrite.appendChild(protection);
 		
