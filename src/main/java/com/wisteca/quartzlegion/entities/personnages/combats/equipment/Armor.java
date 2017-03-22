@@ -26,7 +26,7 @@ public class Armor extends Equipment {
 	/**
 	 * Construire une armure en spécifiant chaque attributs.
 	 * @param type le type de l'item
-	 * @param requiredClasse la classe requise pour pouvoir s'équiper de l'armure ou null pour que tout le monde puisse l'équiper
+	 * @param requiredClasse la classe requise pour pouvoir s'équiper de l'armure
 	 * @param protections une HashMap contenant les protections de l'armure face aux dégâts
 	 * @param name le nom de l'armure
 	 * @param description la description de l'armure
@@ -93,8 +93,10 @@ public class Armor extends Equipment {
 	protected void updateLore()
 	{
 		HashMap<Integer, StringBuilder> loreBuilder = new HashMap<>();
-		ArrayList<String> lore = new ArrayList<>(Arrays.asList("§fQualité: §a" + calculQualityLevel(),
-				"§cClasse requise: §c§l" + getRequiredClasse().getCleanName(), "",
+		ArrayList<String> lore = new ArrayList<>(Arrays.asList(
+				"§fQualité: §a" + calculQualityLevel(),
+				"§cClasse requise: §c§l" + getRequiredClasse().getCleanName(),
+				"",
 				"§7Protection:" + (getRequirements().isEmpty() ? "" : "             §cRequis:")));
 		
 		int i = 0;

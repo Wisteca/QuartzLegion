@@ -2,12 +2,16 @@ package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
 import java.util.HashMap;
 
+import javax.xml.soap.Node;
+
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.utils.effects.Effect;
+import com.wisteca.quartzlegion.utils.effects.EffectInterface.Part;
 
 /**
  * Représente un buff des compétences du personnage durant un certain temps.
@@ -28,9 +32,9 @@ public class SkillsBuff extends SpacePouvoir {
 	 * @param name le nom du pouvoir
 	 */
 	
-	public SkillsBuff(Personnage target, int totalTime, int size, Effect effect, HashMap<Skill, Integer> modifications, String name)
+	public SkillsBuff(Personnage target, String name, int totalTime, int size, HashMap<Skill, Integer> modifications, Effect effect, Part part, int betweenTime)
 	{
-		super(target, totalTime, size, name, effect);
+		super(target, totalTime, size, name, effect, part, betweenTime);
 		myModifiedSkills = new HashMap<>(modifications);
 	}
 	
@@ -44,34 +48,45 @@ public class SkillsBuff extends SpacePouvoir {
 		super(element);
 	}
 	
+	/**
+	 * Consrtuire un buff en fonction de son nom, il se désérialisera en prenant les attributs spécifiés dans le fichier pouvoirs.xml.
+	 * @param target la cible du pouvoir
+	 * @param name le nom du pouvoir tel qu'il est dans le fichier pouvoir.xml
+	 */
+	
+	public SkillsBuff(Personnage target, String name)
+	{
+		super(target, name);
+		initMap();
+	}
+	
 	@Override
 	public void deserialize(Element element)
 	{
 		super.deserialize(element);
+		initMap();
+	}
+	
+	private void initMap()
+	{
+		Element skills = null;
+		NodeList buffs = Constants.POUVOIRS_DOCUMENT.getDocumentElement().getElementsByTagName("buffs").item(0).getChildNodes();
+		for(int i = 0 ; i < buffs.getLength() ; i++)
+			if(buffs.item(i).getNodeType() == Node.ELEMENT_NODE && ((Element) buffs.item(i)).getAttribute("name").equals(getName()))
+				skills = (Element) ((Element) buffs.item(i)).getElementsByTagName("skills").item(0);
 		
-		Element skills = (Element) ((Element) Constants.POUVOIRS_DOCUMENT.getElementsByTagName(element.getNodeName()).item(0)).getElementsByTagName("skills").item(0);
 		myModifiedSkills = new HashMap<>();
 		for(Skill skill : Skill.values())
 		{
 			int modification;
 			if(skills.hasAttribute(skill.toString()) == false)
+			
 				modification = 0;
 			else
 				modification = Integer.valueOf(skills.getAttribute(skill.toString()));
 			
 			myModifiedSkills.put(skill, modification);
 		}
-	}
-	
-	/**
-	 * Change la cible du pouvoir SI et seulement SI le pouvoir ne tourne pas déjà sur un autre personnage.
-	 * @param target la nouvelle cible du pouvoir.
-	 */
-	
-	public void setTarget(Personnage target)
-	{
-		if(isRunning() == false)
-			myTarget = target;
 	}
 	
 	/**

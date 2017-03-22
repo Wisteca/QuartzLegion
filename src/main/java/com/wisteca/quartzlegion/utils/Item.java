@@ -190,10 +190,14 @@ public class Item implements Serializer {
 	
 	public void setShiny(boolean shiny)
 	{
-		if(shiny)
-			myItem.addEnchantment(Enchantment.DURABILITY, 1);
-		else
-			myItem.removeEnchantment(Enchantment.DURABILITY);
+		try {
+			
+			if(shiny)
+				myItem.addEnchantment(Enchantment.DURABILITY, 1);
+			else
+				myItem.removeEnchantment(Enchantment.DURABILITY);
+			
+		} catch(IllegalArgumentException ex) {}
 	}
 	
 	/**
@@ -303,10 +307,10 @@ public class Item implements Serializer {
 	@Override
 	public void deserialize(Element element)
 	{
+		System.out.println("deserialisation item");
 		Element item = (Element) element.getElementsByTagName("item").item(0);
-		System.out.println(item.getAttribute("type"));
-		ItemType type = ItemType.valueOf(item.getAttribute("type"));
-		myItem = new ItemStack(type.getMaterial(), Integer.valueOf(item.getAttribute("amount")), type.getDurability());
+		myType = ItemType.valueOf(item.getAttribute("type"));
+		myItem = new ItemStack(myType.getMaterial(), Integer.valueOf(item.getAttribute("amount")), myType.getDurability());
 		
 		setPermanent(Boolean.valueOf(item.getAttribute("permanent")));
 		setShiny(Boolean.valueOf(item.getAttribute("shiny")));

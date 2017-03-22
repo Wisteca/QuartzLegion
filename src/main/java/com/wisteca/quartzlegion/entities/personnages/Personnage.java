@@ -2,15 +2,19 @@ package com.wisteca.quartzlegion.entities.personnages;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.soap.Node;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.wisteca.quartzlegion.data.Constants;
+import com.wisteca.quartzlegion.entities.PersonnageManager;
 import com.wisteca.quartzlegion.entities.personnages.combats.Damage;
 import com.wisteca.quartzlegion.entities.personnages.combats.Damage.DamageType;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
@@ -34,7 +38,7 @@ public abstract class Personnage extends PassivePersonnage {
 
 	private int myHealth, myEnergy, myLevel, myCapacity; // vie, énergie, niveau et capacité de stockage des buffs
 	private HashMap<Skill, Integer> mySkills = new HashMap<>(); // skills de base
-	private ArrayList<SpacePouvoir> myCurrentPouvoirs = new ArrayList<>(); // pouvoirs "passifs"
+	private ConcurrentLinkedQueue<SpacePouvoir> myCurrentPouvoirs = new ConcurrentLinkedQueue<>(); // pouvoirs "passifs"
 	private AttackPouvoir[] myAttackPouvoirs = new AttackPouvoir[8]; // pouvoirs d'attaque
 	private IntelligentPersonnage[] myPets = new IntelligentPersonnage[3]; // "animaux" de compagnie
 	private Personnage mySelectedPersonnage; // personnage séléctionné, non sérializé
@@ -174,8 +178,10 @@ public abstract class Personnage extends PassivePersonnage {
 			if(ap == null)
 				continue;
 			
-			Element pouvoir = toWrite.getOwnerDocument().createElement(ap.getName());
+			sendMessage(ap.getName());
+			Element pouvoir = toWrite.getOwnerDocument().createElement("attack");
 			attackPouvoirs.appendChild(pouvoir);
+			ap.serialize(pouvoir);
 		}
 	}
 	
@@ -201,25 +207,35 @@ public abstract class Personnage extends PassivePersonnage {
 			else
 				mySkills.put(skill, 1);
 		
-		myCurrentPouvoirs = new ArrayList<>();
+		myCurrentPouvoirs = new ConcurrentLinkedQueue<>();
 		Element skillsBuffs = (Element) element.getElementsByTagName("skillsBuffs").item(0);
 		NodeList buffList = skillsBuffs.getChildNodes();
 		for(int i = 0 ; i < buffList.getLength() ; i++)
-			if(buffList.item(i) instanceof Element)
+			if(buffList.item(i).getNodeType() == Node.ELEMENT_NODE)
 				myCurrentPouvoirs.add(new SkillsBuff((Element) buffList.item(i)));
 		
 		myAttackPouvoirs = new AttackPouvoir[8];
 		Element attackPouvoirs = (Element) element.getElementsByTagName("attackPouvoirs").item(0);
 		NodeList attackList = attackPouvoirs.getChildNodes();
 		for(int i = 0 ; i < attackList.getLength() ; i++)
-			if(attackList.item(i) instanceof Element)
-				myAttackPouvoirs[i] = AttackPouvoir.getPouvoirByName(attackList.item(i).getNodeName().replace('_', ' '), this);
+			if(attackList.item(i).getNodeType() == Node.ELEMENT_NODE)
+				myAttackPouvoirs[i] = AttackPouvoir.getPouvoirByName(((Element) attackList.item(i)).getAttribute("name"), this);
 		
 		Element overTime = (Element) element.getElementsByTagName("overTimePouvoirs").item(0);
 		NodeList DOTList = overTime.getChildNodes();
 		for(int i = 0 ; i < DOTList.getLength() ; i++)
-			if(DOTList.item(i) instanceof Element)
-				myCurrentPouvoirs.add(OverTimePouvoir.getPouvoirByName(DOTList.item(i).getNodeName().replace('_', ' '), this));
+		{
+			if(DOTList.item(i).getNodeType() == Node.ELEMENT_NODE)
+			{
+				Element dotElement = (Element) DOTList.item(i);
+				OverTimePouvoir dot = OverTimePouvoir.getPouvoirByName(dotElement.getAttribute("name"), this);
+				dot.deserialize(dotElement);
+				myCurrentPouvoirs.add(dot);
+			}
+		}
+		
+		for(SpacePouvoir sp : myCurrentPouvoirs)
+			sp.launch();
 	}
 	
 	/**
@@ -261,7 +277,20 @@ public abstract class Personnage extends PassivePersonnage {
 	 * Appelé quand la vie du personnage change.
 	 */
 	
-	protected abstract void healthChanged();
+	protected void healthChanged()
+	{
+		if(myHealth <= 0)
+		{
+			myHealth = 0;
+			die();
+		}
+	}
+	
+	/**
+	 * Appelé quand le personnage se retrouve avec 0 de vie.
+	 */
+	
+	protected abstract void die();
 	
 	/**
 	 * Changer l'énergie du personnage
@@ -370,9 +399,10 @@ public abstract class Personnage extends PassivePersonnage {
 		// augmentation des buffs
 		int boost = 0;
 		for(SpacePouvoir buff : myCurrentPouvoirs)
+		{
 			if(buff instanceof SkillsBuff)
 				boost += ((SkillsBuff) buff).getModification(skill);
-		
+		}
 		// augmentation des armures
 		for(Armor a : getArmors())
 			if(a != null)
@@ -403,15 +433,24 @@ public abstract class Personnage extends PassivePersonnage {
 		
 		for(SpacePouvoir pp : myCurrentPouvoirs)
 			pp.doTime();
+		
+		for(AttackPouvoir ap : myAttackPouvoirs)
+			if(ap != null)
+				ap.doTime();
 	}
 	
 	/**
 	 * @param level le nouveau niveau du personnage
 	 */
 	
-	public void setLevel(int level)
+	public void setLevel(int newLevel)
 	{
-		myLevel = level;
+		if(newLevel == myLevel)
+			return;
+		
+		int oldLevel = myLevel;
+		myLevel = newLevel;
+		levelChanged(oldLevel, myLevel - oldLevel);
 	}
 	
 	/**
@@ -422,6 +461,8 @@ public abstract class Personnage extends PassivePersonnage {
 	{
 		return myLevel;
 	}
+	
+	protected abstract void levelChanged(int oldLevel, int levelsNumber);
 	
 	/**
 	 * Définir un personnage séléctionné par le personnage courant, c'est ce personnage qu'il visera avec ses attaques, cette méthode est généralement appelée automatiquement par ses comportements.
@@ -443,6 +484,24 @@ public abstract class Personnage extends PassivePersonnage {
 	}
 	
 	/**
+	 * Retourne une liste de tous les personnages autour du personnage.
+	 * @param distance la distance entre les personnages
+	 * @return une liste de personnages
+	 */
+	
+	public List<Personnage> getNearbyPersonnages(int distance)
+	{
+		List<Personnage> personnages = new ArrayList<>();
+		for(Personnage perso : PersonnageManager.getInstance().getPersonnages())
+		{
+			if(perso.getLocation().distance(this.getLocation()) <= distance)
+				personnages.add(perso);
+		}
+		
+		return personnages;
+	}
+	
+	/**
 	 * Récupérer la puissance d'attaque du personnage en fonction de l'arme utilisée. Les dégâts sont calculés comme ceci :
 	 * dégâts arme + compétence / 2
 	 * @param weapon le type de l'arme utilisée pour attaquer
@@ -454,8 +513,11 @@ public abstract class Personnage extends PassivePersonnage {
 		//  arme utilisée
 		Weapon currentWeapon = null;
 		for(Weapon w : getWeapons())
-			if(w.getWeaponType().equals(weapon))
-				currentWeapon = w;
+		{
+			if(w != null)
+				if(w.getWeaponType().equals(weapon))
+					currentWeapon = w;
+		}
 		
 		if(currentWeapon == null)
 			return null;
@@ -524,12 +586,14 @@ public abstract class Personnage extends PassivePersonnage {
 				if(checkEvade(ClasseSkill.PARADE, damage.getSkills().get(HabilitySkill.FORCE)))
 					return 0;
 				break;
+			default:
+				break;
 		}
 		
 		// calcul des dégâts
 		int totalDamage = 0;
 		for(DamageType type : DamageType.values())
-			totalDamage += damage.getDamages().get(type) - (getProtection(type) + getTemporarySkill(ClasseSkill.ARMURE) / 5);
+			totalDamage += damage.getDamages().get(type) - getProtection(type);
 		totalDamage /= DamageType.values().length;
 		
 		// critique
@@ -546,6 +610,32 @@ public abstract class Personnage extends PassivePersonnage {
 	private boolean checkEvade(ClasseSkill skill, int compare)
 	{
 		return new Random().nextInt(getTemporarySkill(skill)) > compare;
+	}
+	
+	/**
+	 * Infliger tant de dégâts au personnage, cette méthode peut être utilisée pour les dégâts d'environnement, elle diminue les dégâts en fonction de l'armure du personnage.
+	 * @param damage les dégâts à infliger au personnage
+	 * @param types permet de spécifier les types de dégât à infliger, peut être null si aucun type de dégât ne répond au contexte
+	 */
+	
+	public void damage(int damage, DamageType... types)
+	{
+		int moyenne = 0;
+		if(types == null)
+		{
+			for(DamageType dt : DamageType.values())
+				moyenne += getProtection(dt);
+			moyenne /= DamageType.values().length;
+		}
+		else
+		{
+			for(DamageType type : types)
+				moyenne += getProtection(type);
+			moyenne /= types.length;
+		}
+		
+		sendMessage("damage : " + (damage - moyenne <= 0 ? 0 : damage - moyenne));
+		changeHealth(-(damage - moyenne <= 0 ? 0 : damage - moyenne));
 	}
 	
 	/**
@@ -575,10 +665,17 @@ public abstract class Personnage extends PassivePersonnage {
 	public int getProtection(DamageType protection)
 	{
 		int moyenne = 0;
+		int armorsNbre = 0;
 		for(Armor armor : getArmors())
-			moyenne += armor.getProtection(protection);
+		{
+			if(armor != null)
+			{
+				moyenne += armor.getProtection(protection);
+				armorsNbre++;
+			}
+		}
 		
-		return moyenne / getArmors().length + getTemporarySkill(ClasseSkill.ARMURE);
+		return (int) Math.floor((double) moyenne / armorsNbre) + getTemporarySkill(ClasseSkill.ARMURE);
 	}
 	
 	/**
@@ -591,9 +688,19 @@ public abstract class Personnage extends PassivePersonnage {
 	
 	public boolean setPouvoir(int index, Class<? extends AttackPouvoir> type)
 	{
+		AttackPouvoir pouvoir = newInstance(type);
+		
+		if(pouvoir.getWeaponType().equals(WeaponType.AUCUN))
+		{
+			myAttackPouvoirs[index] = pouvoir;
+			return true;
+		}
+		
 		for(Weapon w : getWeapons())
 		{
-			AttackPouvoir pouvoir = newInstance(type);
+			if(w == null)
+				continue;
+			
 			if(w.getWeaponType().equals(pouvoir.getWeaponType()) == false)
 				continue;
 			
@@ -815,7 +922,7 @@ public abstract class Personnage extends PassivePersonnage {
 		MAGE("Mage"),
 		GUERISSEUR("Guérisseur"),
 		PALADIN("Paladin"),
-		AUCUN("Non spécifié");
+		AUCUN("Aucune");
 		
 		private String myCleanName;
 		

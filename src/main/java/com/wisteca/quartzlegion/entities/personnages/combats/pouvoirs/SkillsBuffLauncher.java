@@ -49,7 +49,7 @@ public class SkillsBuffLauncher implements OfficialPouvoir {
 	}
 	
 	/**
-	 * Change le pouvoir que le lanceur lancera. Créer une nouvelle instance désérialisée de ce pouvoir.
+	 * Change le pouvoir que le lanceur lancera. Crée une nouvelle instance désérialisée de ce pouvoir.
 	 * @param pouvoirName le nom du nouveau pouvoir
 	 */
 	

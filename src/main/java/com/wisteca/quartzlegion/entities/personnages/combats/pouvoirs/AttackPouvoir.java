@@ -50,7 +50,11 @@ public abstract class AttackPouvoir implements OfficialPouvoir {
 	@Override
 	public boolean launch()
 	{
-		return checkLaunch(myAttacker);
+		if(checkLaunch(myAttacker) == false)
+			return false;
+		
+		myCurrentTime = getLoadingTime() + getDuration();
+		return true;
 	}
 	
 	@Override

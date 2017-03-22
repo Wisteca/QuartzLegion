@@ -20,6 +20,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.w3c.dom.Element;
 
+import com.wisteca.quartzlegion.utils.effects.EffectInterface.Part;
+
 public class SpeakerPersonnage extends PassivePersonnage {
 
 	public SpeakerPersonnage(Element element)
@@ -565,5 +567,12 @@ public class SpeakerPersonnage extends PassivePersonnage {
 	{
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Location getCurrentLocation(Part part)
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

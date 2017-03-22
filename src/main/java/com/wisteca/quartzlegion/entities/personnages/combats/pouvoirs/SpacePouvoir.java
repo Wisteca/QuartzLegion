@@ -5,12 +5,16 @@ import java.util.UUID;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.PersonnageManager;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.utils.Utils;
 import com.wisteca.quartzlegion.utils.effects.Effect;
+import com.wisteca.quartzlegion.utils.effects.EffectInterface;
+import com.wisteca.quartzlegion.utils.effects.EffectInterface.Part;
 
 /**
  * Représente un pouvoir qui a un effet de durée sur un personnage pendant lequel il aura un effet néfaste ou bienfaisant.
@@ -19,10 +23,10 @@ import com.wisteca.quartzlegion.utils.effects.Effect;
 
 public abstract class SpacePouvoir implements Pouvoir {
 	
-	private int myTotalTime, mySize, myRemainingTime = 0;
-	protected Personnage myTarget = null;
+	private int myTotalTime, mySize, myRemainingTime = 0, myBetweenTime;
+	private Personnage myTarget = null;
 	private String myName;
-	private Effect myEffect;
+	private EffectInterface myEffect;
 	
 	/**
 	 * Construire un SpacePouvoir en précisant chaque attributs.
@@ -31,15 +35,20 @@ public abstract class SpacePouvoir implements Pouvoir {
 	 * @param size la taille que prend le pouvoir dans la réserve du personnage
 	 * @param name le nom du pouvoir qui apparaît dans la liste des pouvoirs qui tournent d'un joueur
 	 * @param effect l'effet de particules qui apparaîtra pendant que le pouvoir tourne sur le personnage
+	 * @param part la partie du corps du personnage où l'effet se propagera
+	 * @param betweenTime le temps entre chaque lancement de l'effet
 	 */
 	
-	public SpacePouvoir(Personnage perso, int totalTime, int size, String name, Effect effect)
+	public SpacePouvoir(Personnage perso, int totalTime, int size, String name, Effect effect, Part part, int betweenTime)
 	{
 		myTarget = perso;
 		myTotalTime = totalTime;
 		mySize = size;
 		myName = name;
-		myEffect = effect;
+		myBetweenTime = betweenTime;
+		
+		if(effect != null)
+			myEffect = new EffectInterface(perso, effect, part);
 	}
 	
 	/**
@@ -52,37 +61,65 @@ public abstract class SpacePouvoir implements Pouvoir {
 		deserialize(element);
 	}
 	
-	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	/**
+	 * Consrtuire un buff en fonction de son nom, il se désérialisera en prenant les attributs spécifiés dans le fichier pouvoirs.xml.
+	 * @param target la cible du pouvoir
+	 * @param name le nom du pouvoir tel qu'il est dans le fichier pouvoir.xml
+	 */
+	
+	public SpacePouvoir(Personnage target, String name)
 	{
-		Utils.removeElementIfExist(toWrite, myName.replace(' ', '_'));
-		Element pouvoir = toWrite.getOwnerDocument().createElement(myName.replace(' ', '_'));
-		toWrite.appendChild(pouvoir);
-		pouvoir.setAttribute("remainingTime", Integer.toString(myRemainingTime));
+		myTarget = target;
+		myName = name;
+		init();
+	}
+	
+	private void init()
+	{
+		Element state = null;
+		NodeList buffs = Constants.POUVOIRS_DOCUMENT.getDocumentElement().getElementsByTagName("buffs").item(0).getChildNodes();
+		for(int i = 0 ; i < buffs.getLength() ; i++)
+			if(buffs.item(i).getNodeType() == Node.ELEMENT_NODE && ((Element) buffs.item(i)).getAttribute("name").equals(myName))
+				state = (Element) buffs.item(i);
 		
-		if(myTarget != null)
-			pouvoir.setAttribute("personnage", myTarget.getUniqueId().toString());
+		myTotalTime = Integer.valueOf(state.getAttribute("totalTime"));
+		mySize = Integer.valueOf(state.getAttribute("size"));
+		
+		NodeList lookForEffect = state.getChildNodes();
+		for(int i = 0 ; i < lookForEffect.getLength() ; i++)
+		{
+			if(lookForEffect.item(i).getNodeType() == Node.ELEMENT_NODE && lookForEffect.item(i).getNodeName().equals("effect"))
+			{
+				Element effect = (Element) lookForEffect.item(i);
+				myEffect = new EffectInterface(myTarget, Effect.getEffectByName(effect.getAttribute("name")), Part.valueOf(effect.getAttribute("part")));
+				myBetweenTime = Integer.valueOf(effect.getAttribute("betweenTime"));
+			}
+		}
 	}
 	
 	@Override
 	public void deserialize(Element element)
 	{
-		try {
-			
-			myName = element.getNodeName().replace('_', ' ');
-			Element pouvoir = (Element) Constants.POUVOIRS_DOCUMENT.getElementsByTagName(element.getNodeName()).item(0);
-			
-			if(element.hasAttribute("personnage"))
-				myTarget = (Personnage) PersonnageManager.getInstance().getPersonnage(UUID.fromString(element.getAttribute("personnage")));
-			
-			myRemainingTime = Integer.valueOf(element.getAttribute("remainingTime"));
-			myTotalTime = Integer.valueOf(pouvoir.getAttribute("totalTime"));
-			mySize = Integer.valueOf(pouvoir.getAttribute("size"));
-			myEffect = Effect.getEffectByName(pouvoir.getAttribute("effect"));
+		myName = element.getAttribute("name");
 		
-		} catch(Exception ex) {
-			ex.printStackTrace();
-		}
+		if(element.hasAttribute("personnage"))
+			myTarget = (Personnage) PersonnageManager.getInstance().getPersonnage(UUID.fromString(element.getAttribute("personnage")));
+		
+		myRemainingTime = Integer.valueOf(element.getAttribute("remainingTime"));
+		init();
+	}
+	
+	@Override
+	public void serialize(Element toWrite) throws ParserConfigurationException
+	{
+		Utils.removeElementsWhoHasAttribute(toWrite, "name", myName);
+		Element pouvoir = toWrite.getOwnerDocument().createElement("pouvoir");
+		toWrite.appendChild(pouvoir);
+		pouvoir.setAttribute("name", myName);
+		pouvoir.setAttribute("remainingTime", Integer.toString(myRemainingTime));
+		
+		if(myTarget != null)
+			pouvoir.setAttribute("personnage", myTarget.getUniqueId().toString());
 	}
 	
 	@Override
@@ -92,9 +129,12 @@ public abstract class SpacePouvoir implements Pouvoir {
 		{
 			myRemainingTime = myTotalTime;
 			myTarget.addSpacePouvoir(this);
-			if(myEffect != null)
-				myEffect.launch(myTarget.getLocation().add(0, 1, 0));
 			
+			if(myEffect != null)
+			{
+				myEffect.setPersonnage(myTarget);
+				myEffect.repeat(myBetweenTime, myTotalTime);
+			}
 			return true;
 		}
 		
@@ -108,7 +148,22 @@ public abstract class SpacePouvoir implements Pouvoir {
 			myEffect.doTime();
 		
 		if(isRunning())
+		{
 			myRemainingTime--;
+			if(isRunning() == false)
+				stop();
+		}
+	}
+	
+	/**
+	 * Change la cible du pouvoir SI et seulement SI le pouvoir ne tourne pas déjà sur un autre personnage.
+	 * @param target la nouvelle cible du pouvoir.
+	 */
+	
+	public void setTarget(Personnage target)
+	{
+		if(isRunning() == false)
+			myTarget = target;
 	}
 	
 	/**
@@ -119,6 +174,8 @@ public abstract class SpacePouvoir implements Pouvoir {
 	{
 		myTarget.removeSpacePouvoir(this);
 		myRemainingTime = 0;
+		if(myEffect != null)
+			myEffect.stop();
 	}
 	
 	/**
@@ -131,6 +188,17 @@ public abstract class SpacePouvoir implements Pouvoir {
 	}
 	
 	/**
+	 * Change le temps restant au pouvoir seulement SI le pouvoir n'est pas en train de tourner.
+	 * @param time le nouveau temps restant
+	 */
+	
+	protected void setRemainingTime(int time)
+	{
+		if(isRunning() == false)
+			myRemainingTime = time;
+	}
+	
+	/**
 	 * @return le temps restant avant que le pouvoir n'ait plus d'effet sur le personnage, 0 si le pouvoir ne tourne pas sur le personnage
 	 */
 	
@@ -138,6 +206,10 @@ public abstract class SpacePouvoir implements Pouvoir {
 	{
 		return myRemainingTime;
 	}
+	
+	/**
+	 * @return true si le pouvoir tourne sur un personnage
+	 */
 	
 	public boolean isRunning()
 	{
@@ -177,6 +249,6 @@ public abstract class SpacePouvoir implements Pouvoir {
 	
 	public Effect getEffect()
 	{
-		return myEffect;
+		return myEffect.getEffect();
 	}
 }

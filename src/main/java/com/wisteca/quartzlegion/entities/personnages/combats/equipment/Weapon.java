@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Random;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.soap.Node;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
@@ -26,14 +28,15 @@ import com.wisteca.quartzlegion.utils.Utils;
 public class Weapon extends Equipment {
 	
 	private WeaponType myWeaponType;
-	private HashMap<DamageType, WeaponDamage> myDamages = new HashMap<>();
 	private int myCriticalLuck, myCriticalDamages;
+	private HashMap<DamageType, int[]> myDamages;
+	private Random myRandom = new Random();
 	
 	/**
 	 * Construire une arme en précisant tous ses attributs.
 	 * @param type le type d'item
 	 * @param weapon le type d'arme
-	 * @param requiredCLasse la classe requise pour s'équiper de l'arme ou null pour que tout le monde puisse l'équiper
+	 * @param requiredCLasse la classe requise pour s'équiper de l'arme
 	 * @param damages les dégâts de l'arme
 	 * @param requirements les compétences requises pour pouvoir équiper l'arme
 	 * @param increases les augmentations des compétences que provoque l'arme quand elle est équipée
@@ -44,7 +47,7 @@ public class Weapon extends Equipment {
 	 * @param description la description de l'arme
 	 */
 	
-	public Weapon(ItemType type, WeaponType weapon, Classe requiredCLasse, HashMap<DamageType, WeaponDamage> damages, HashMap<Skill, Integer> requirements, HashMap<Skill, Integer> increases,
+	public Weapon(ItemType type, WeaponType weapon, Classe requiredCLasse, HashMap<Skill, Integer> requirements, HashMap<DamageType, int[]> damages, HashMap<Skill, Integer> increases,
 			int requiredLevel, int criticalLuck, int criticalDamage, String name, String description)
 	{
 		super(type, requiredCLasse, requirements, increases, requiredLevel, name, description);
@@ -54,15 +57,16 @@ public class Weapon extends Equipment {
 		
 		if(damages == null)
 		{
+			myDamages = new HashMap<>();
 			for(DamageType damage : DamageType.values())
-				myDamages.put(damage, new WeaponDamage(0, 0));
+				myDamages.put(damage, new int[2]);
 		}
 		else
 		{
 			myDamages = new HashMap<>(damages);
 			for(DamageType damage : DamageType.values())
 				if(myDamages.containsKey(damage) == false)
-					myDamages.put(damage, new WeaponDamage(0, 0));
+					myDamages.put(damage, new int[2]);
 		}
 		
 		updateLore();
@@ -82,16 +86,18 @@ public class Weapon extends Equipment {
 	protected void updateLore()
 	{
 		HashMap<Integer, StringBuilder> loreBuilder = new HashMap<>();
-		List<String> lore = new ArrayList<>(Arrays.asList("§cType: §4" + getWeaponType().getCleanName(),
-				"§fQualité: §a" + calculQualityLevel(), "§cClasse requise: §c§l" + getRequiredClasse().getCleanName(),
-				"§5Chances de critiques: §f" + getCriticalLuck(), "§5Dégâts critiques: §f" + getCriticalDamages(), "",
+		List<String> lore = new ArrayList<>(Arrays.asList(
+				"§cType: §4" + getWeaponType().getCleanName(),
+				"§fQualité: §a" + calculQualityLevel(), 
+				"§cClasse requise: §c§l" + getRequiredClasse().getCleanName(),
+				"§5Chances de critiques: §f" + getCriticalLuck(),
+				"§5Dégâts critiques: §f" + getCriticalDamages(), "",
 				"§7Dégâts:" + (getRequirements().isEmpty() ? "" : "                    §cRequis:")));
 		
 		int i = 0;
 		for(DamageType damage : DamageType.values())
 		{
-			loreBuilder.put(i, new StringBuilder("   §e" + damage.getSpaceName() + ": §b" + myDamages.get(damage).getMinDamage()
-					+ " - " + myDamages.get(damage).getMaxDamage()));
+			loreBuilder.put(i, new StringBuilder("   §e" + damage.getSpaceName() + ": §b" + myDamages.get(damage)[0] + " - " + myDamages.get(damage)[1]));
 			i++;
 		}
 		
@@ -136,8 +142,7 @@ public class Weapon extends Equipment {
 	{
 		int total = 0;
 		for(DamageType damage : DamageType.values())
-			total += ((myDamages.get(damage).getMaxDamage() - myDamages.get(damage).getMinDamage()) / 2)
-					+ myDamages.get(damage).getMinDamage();
+			total += (((myDamages.get(damage)[1] - myDamages.get(damage)[0])) / 2) + myDamages.get(damage)[0];
 		return total / DamageType.values().length;
 	}
 	
@@ -161,23 +166,27 @@ public class Weapon extends Equipment {
 	}
 	
 	/**
-	 * Changer des dégâts existants ou ajouter de nouveaux dégâts.
-	 * @param type le type de dégât
-	 * @param damages les nouveaux dégâts
+	 * @param type le type de dégât à changer
+	 * @param min les dégâts minimum de l'arme
+	 * @param max les dégâts maximum de l'arme
+	 * @throws IllegalArgumentException si les dégâts minimum sont plus élevés que les dégâts maximum
 	 */
 	
-	public void setDamage(DamageType type, WeaponDamage damages)
+	public void setDamages(DamageType type, int min, int max)
 	{
-		myDamages.put(type, damages);
-		updateLore();
+		if(min < max)
+			myDamages.put(type, new int[]{min, max});
+		else
+			throw new IllegalArgumentException("Les dégâts minimum sont plus élevés que les dégâts maximum...");
 	}
 	
 	/**
-	 * @param type le type de dégât à récupérer
-	 * @return un objet {@link WeaponDamage} contenant les dégats minimum et maximum
+	 * Récupérer dans un tableau la plage de dégâts de l'arme
+	 * @param type le type de dégât
+	 * @return un tableau contenant en [0] les dégâts minimum et en [1] les dégâts maximum
 	 */
 	
-	public WeaponDamage getDamages(DamageType type)
+	public int[] getDamages(DamageType type)
 	{
 		return myDamages.get(type);
 	}
@@ -190,8 +199,10 @@ public class Weapon extends Equipment {
 	
 	public int getRandomDamages(DamageType type)
 	{
-		return new Random().nextInt(myDamages.get(type).getMaxDamage() - myDamages.get(type).getMinDamage())
-				+ myDamages.get(type).getMinDamage();
+		if(myDamages.get(type)[1] > 0)
+			return myRandom.nextInt(myDamages.get(type)[1] - myDamages.get(type)[0]) + myDamages.get(type)[0];
+		else
+			return 0;
 	}
 	
 	/**
@@ -241,12 +252,20 @@ public class Weapon extends Equipment {
 		toWrite.setAttribute("criticalLuck", Integer.toString(getCriticalLuck()));
 		toWrite.setAttribute("criticalDamages", Integer.toString(getCriticalDamages()));
 		
-		Utils.removeElementIfExist(toWrite, "damages");
 		Element damages = toWrite.getOwnerDocument().createElement("damages");
 		toWrite.appendChild(damages);
 		
 		for(DamageType type : DamageType.values())
-			damages.setAttribute(type.toString(), Integer.toString(getDamages(type).getMinDamage()) + "-" + Integer.toString(getDamages(type).getMaxDamage()));
+		{
+			if(myDamages.get(type)[0] == 0 && myDamages.get(type)[1] == 0)
+				continue;
+			
+			Element damageElement = toWrite.getOwnerDocument().createElement(type.toString());
+			damages.appendChild(damageElement);
+			
+			damageElement.setAttribute("min", Integer.toString(myDamages.get(type)[0]));
+			damageElement.setAttribute("max", Integer.toString(myDamages.get(type)[1]));
+		}
 	}
 	
 	@Override
@@ -258,55 +277,22 @@ public class Weapon extends Equipment {
 		myCriticalLuck = Integer.valueOf(element.getAttribute("criticalLuck"));
 		myCriticalDamages = Integer.valueOf(element.getAttribute("criticalDamages"));
 		
-		Element damages = (Element) element.getElementsByTagName("damages").item(0);
-		
 		myDamages = new HashMap<>();
-		for(DamageType type : DamageType.values())
+		NodeList list = element.getElementsByTagName("damages").item(0).getChildNodes();
+		for(int i = 0 ; i < list.getLength() ; i++)
 		{
-			String[] minAndMax = damages.getAttribute(type.toString()).split("-");
-			myDamages.put(type, new WeaponDamage(Integer.valueOf(minAndMax[0]), Integer.valueOf(minAndMax[1])));
+			if(list.item(i).getNodeType() != Node.ELEMENT_NODE)
+				continue;
+			
+			Element damage = (Element) list.item(i);
+			myDamages.put(DamageType.valueOf(damage.getNodeName()), new int[]{Integer.valueOf(damage.getAttribute("min")), Integer.valueOf(damage.getAttribute("max"))});
 		}
+		
+		for(DamageType type : DamageType.values())
+			if(myDamages.containsKey(type) == false)
+				myDamages.put(type, new int[]{0, 0});
 		
 		updateLore();
-	}
-	
-	/**
-	 * Simple classe contenant deux attributs, les dégâts maximum et minimum d'une arme.
-	 * @author Wisteca
-	 */
-	
-	public static class WeaponDamage {
-		
-		private int myMinDamage, myMaxDamage;
-		
-		/**
-		 * @param minDamage les dégâts minimum
-		 * @param maxDamage les dégâts maximum
-		 */
-		
-		public WeaponDamage(int minDamage, int maxDamage)
-		{
-			myMinDamage = minDamage;
-			myMaxDamage = maxDamage;
-		}
-		
-		/**
-		 * @return les dégâts minimum
-		 */
-		
-		public int getMinDamage()
-		{
-			return myMinDamage;
-		}
-		
-		/**
-		 * @return les dégâts maxmimum
-		 */
-		
-		public int getMaxDamage()
-		{
-			return myMaxDamage;
-		}
 	}
 	
 	/**
@@ -323,7 +309,8 @@ public class Weapon extends Equipment {
 		ARME_LOURDE("Arme lourde"),
 		DEMONIAQUE("Démoniaque"),
 		ELEMENTAIRE("Élémentaire"), 
-		SANG("Sang");
+		SANG("Sang"),
+		AUCUN("Aucun");
 		
 		private String myCleanName;
 		

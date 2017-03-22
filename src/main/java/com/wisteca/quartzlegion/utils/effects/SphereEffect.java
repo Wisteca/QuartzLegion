@@ -8,6 +8,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Fais apparaître une sphère autour de la position donnée.
@@ -18,7 +20,7 @@ public class SphereEffect extends AOEffect {
 	
 	// Valeurs par défauts
 	private double myExtension, myCurrentExtension, myIncrease;
-	private int myCounts, myLayers, myParticlesPerLayer, myCurrentTime = 0, myBetweenTime;
+	private int myCounts, myCurrentCounts, myLayers, myParticlesPerLayer, myCurrentTime = 0, myBetweenTime;
 	private Location myLocation;
 	private boolean myIsRunning = false;
 	
@@ -59,7 +61,13 @@ public class SphereEffect extends AOEffect {
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
 		super.serialize(toWrite);
-		Element effect = (Element) toWrite.getElementsByTagName(getName().replace(' ', '_')).item(0);
+
+		Element effect = null;
+		NodeList list = toWrite.getElementsByTagName("AOEffect");
+		for(int i = 0 ; i < list.getLength() ; i++)
+			if(list.item(i).getNodeType() == Node.ELEMENT_NODE && ((Element) list.item(i)).getAttribute("name").equals(getName()))
+				effect = (Element) list.item(i);
+		
 		effect.setAttribute("extension", Double.toString(myExtension));
 		effect.setAttribute("increase", Double.toString(myIncrease));
 		effect.setAttribute("counts", Integer.toString(myCounts));
@@ -193,6 +201,7 @@ public class SphereEffect extends AOEffect {
 	 * @param newLoc la nouvelle position où la sphère continue son expansion
 	 */
 	
+	@Override
 	public void updateLocation(Location newLoc)
 	{
 		myLocation = newLoc;
@@ -209,6 +218,7 @@ public class SphereEffect extends AOEffect {
 		{
 			myIsRunning = true;
 			myCurrentExtension = myExtension;
+			myCurrentCounts = myCounts;
 		}
 		
 		myLocation = center;
@@ -237,14 +247,15 @@ public class SphereEffect extends AOEffect {
 		
 		if(myCurrentTime == 0)
 		{
-			if(myCounts == 0)
+			if(myCurrentCounts == 0)
 			{
+				myCurrentCounts = myCounts;
 				myIsRunning = false;
 				return;
 			}
 			
 			myCurrentExtension += myIncrease;
-			myCounts--;
+			myCurrentCounts--;
 			myCurrentTime = myBetweenTime;
 			launch(myLocation);
 		}

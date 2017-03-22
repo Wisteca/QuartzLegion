@@ -28,9 +28,9 @@ public abstract class Equipment extends Item {
 	/**
 	 * Construire un équipement en précisant tous les attributs.
 	 * @param type le type d'item
-	 * @param requiredClasse la classe requise pour équiper l'item ou null pour que tout le monde puisse l'équiper
-	 * @param requirements les compétences requises pour équiper l'équipement
-	 * @param increases les augmentations des compétences que provoque l'équipement lorsqu'il est équipé
+	 * @param requiredClasse la classe requise pour équiper l'équipement
+	 * @param requirements les compétences requises pour équiper l'équipement ou null
+	 * @param increases les augmentations des compétences que provoque l'équipement lorsqu'il est équipé ou null
 	 * @param requiredLevel le niveau requis pour équiper l'équipement
 	 * @param name le nom de l'équipement
 	 * @param description la description de l'équipement
@@ -40,10 +40,11 @@ public abstract class Equipment extends Item {
 	{
 		super(type);
 		this.setName(name);
+		this.setFlags(true);
 		myDescription = description;
 		myRequiredClasse = requiredClasse;
-		myRequirements = requirements;
-		myIncreases = increases;
+		myRequirements = (requirements == null ? new HashMap<>() : requirements);
+		myIncreases = (increases == null ? new HashMap<>() : increases);
 		myRequiredLevel = requiredLevel;
 	}
 	
@@ -55,6 +56,7 @@ public abstract class Equipment extends Item {
 	public Equipment(Element element)
 	{
 		super(element);
+		this.setFlags(true);
 	}
 	
 	/**
@@ -226,7 +228,7 @@ public abstract class Equipment extends Item {
 		
 		equipment.setAttribute("description", myDescription);
 		equipment.setAttribute("requiredLevel", Integer.toString(getRequiredLevel()));
-		equipment.setAttribute("requiredClasse", getRequiredClasse().toString());
+		equipment.setAttribute("requiredClasse", myRequiredClasse.toString());
 		
 		Utils.removeElementIfExist(toWrite, "requirements");
 		Element requirements = toWrite.getOwnerDocument().createElement("requirements");
@@ -247,7 +249,7 @@ public abstract class Equipment extends Item {
 	public void deserialize(Element element)
 	{
 		super.deserialize(element);
-		
+		System.out.println("deserialisation equipment");
 		Element equipment = (Element) element.getElementsByTagName("equipment").item(0);
 		
 		myDescription = equipment.getAttribute("description");

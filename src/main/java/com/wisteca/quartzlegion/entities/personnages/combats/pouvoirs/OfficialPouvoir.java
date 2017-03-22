@@ -86,16 +86,15 @@ public interface OfficialPouvoir extends Pouvoir {
 			return false;
 		}
 		
-		for(Skill skill : getRequirements().keySet())
+		if(getRequirements() != null)
 		{
-			System.out.println(getRequirements());
-			System.out.println(getRequirements().get(skill));
-			System.out.println(launcher);
-			System.out.println(launcher.getTemporarySkill(skill));
-			if(getRequirements().get(skill) > launcher.getTemporarySkill(skill))
+			for(Skill skill : getRequirements().keySet())
 			{
-				launcher.sendMessage(Channel.COMBAT, "Vous n'avez pas les compétences requises pour utiliser ce pouvoir.");
-				return false;
+				if(getRequirements().get(skill) > launcher.getTemporarySkill(skill))
+				{
+					launcher.sendMessage(Channel.COMBAT, "Vous n'avez pas les compétences requises pour utiliser ce pouvoir.");
+					return false;
+				}
 			}
 		}
 		

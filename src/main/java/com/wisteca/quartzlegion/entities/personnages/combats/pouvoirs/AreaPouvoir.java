@@ -2,7 +2,6 @@ package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Channel;
@@ -19,11 +18,6 @@ public abstract class AreaPouvoir extends AttackPouvoir {
 		super(attacker);
 	}
 	
-	public AreaPouvoir(Element element)
-	{
-		super(element);
-	}
-	
 	@Override
 	public boolean launch()
 	{
@@ -38,8 +32,8 @@ public abstract class AreaPouvoir extends AttackPouvoir {
 		{
 			for(int distance = 1 ; distance <= getMaxLaunchDistance() ; distance++)
 			{
-				Location loc = getAttacker().getEyeLocation().add(getAttacker().getEyeLocation().getDirection().multiply(distance));
-				getAttacker().sendMessage("block : " + loc.getBlock().getType());
+				Location loc = getAttacker().getEyeLocation().add(getAttacker().getEyeLocation().getDirection().normalize().multiply(distance));
+				
 				if(loc.getBlock().getType().equals(Material.AIR) == false)
 				{
 					launchLoc = loc;
@@ -54,6 +48,7 @@ public abstract class AreaPouvoir extends AttackPouvoir {
 			}
 		}
 		
+		getAttacker().changeEnergy(-getEnergyCost());
 		launchAt(launchLoc);
 		return true;
 	}

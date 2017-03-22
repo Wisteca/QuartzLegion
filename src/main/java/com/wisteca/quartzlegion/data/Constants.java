@@ -22,7 +22,8 @@ import com.wisteca.quartzlegion.MainClass;
 import com.wisteca.quartzlegion.data.Accessor.AccessorMode;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.AttackPouvoir;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.OverTimePouvoir;
-import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.attack.AttackTest1;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.attack.MegaDestroyer;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.attack.PistolShoot;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.overtime.OverTimeTest;
 import com.wisteca.quartzlegion.utils.effects.Effect;
 import com.wisteca.quartzlegion.utils.effects.SphereEffect;
@@ -97,7 +98,7 @@ public class Constants {
 	 * Liste des pouvoirs d'attaques, itéré lors de la déserialization de pouvoir, Tous les pouvoirs d'attaques doivent être enregistrés dans cette liste !
 	 */
 	
-	public final static ArrayList<Class<? extends AttackPouvoir>> ATTACK_POUVOIR_LIST = new ArrayList<>(Arrays.asList(AttackTest1.class));
+	public final static ArrayList<Class<? extends AttackPouvoir>> ATTACK_POUVOIR_LIST = new ArrayList<>(Arrays.asList(MegaDestroyer.class, PistolShoot.class));
 	
 	/**
 	 * Liste des DOT, tous les DOT doivent être enregistrés dans cette liste sinon ils ne pourront pas être déserializé !

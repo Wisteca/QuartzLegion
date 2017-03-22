@@ -17,6 +17,7 @@ import com.wisteca.quartzlegion.entities.personnages.Personnage.Race;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 import com.wisteca.quartzlegion.utils.Utils;
+import com.wisteca.quartzlegion.utils.effects.EffectInterface.Part;
 
 /**
  * Classe de base de chaque entités, représente une entité décorative et incapable de se battre, possède des armes pour la décoration !
@@ -184,7 +185,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	}
 	
 	/**
-	 * @return un tableau contenant les 3 armes du personnage, ou null si il n'a pas d'arme
+	 * @return un tableau contenant les 3 armes du personnage, les armes peuvent être null si le slot est vide
 	 * @see Weapon
 	 */
 	
@@ -192,6 +193,14 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	{
 		return myWeapons;
 	}
+	
+	/**
+	 * Récupérer <strong>APPROXIMATIVEMENT</strong> la location de la partie du corps du personnage.
+	 * @param part la partie du corps à récupérer
+	 * @return la location APPROXIMATIVE de la partie du corps
+	 */
+	
+	public abstract Location getCurrentLocation(Part part);
 	
 	/**
 	 * Méthode appelée automatiquement lorsqu'un événement se déclenche, {@link PersonnageManager} pour voir la liste d'événements.
@@ -230,7 +239,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 		{
 			if(weapon == null)
 				continue;
-			
+		
 			Element weaponElement = toWrite.getOwnerDocument().createElement("weapon");
 			weapons.appendChild(weaponElement);
 			weapon.serialize(weaponElement);

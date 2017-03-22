@@ -1,6 +1,8 @@
 package com.wisteca.quartzlegion.entities;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -10,12 +12,14 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.wisteca.quartzlegion.MainClass;
 import com.wisteca.quartzlegion.entities.personnages.Joueur;
 import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
+import com.wisteca.quartzlegion.entities.personnages.Personnage;
 
 public class PersonnageManager implements Listener {
 	
@@ -60,9 +64,41 @@ public class PersonnageManager implements Listener {
 		myPersonnages.remove(uuid);
 	}
 	
-	public HashMap<UUID, PassivePersonnage> getPersonnages()
+	/**
+	 * @return la liste de tous les PassivePersonnages
+	 */
+	
+	public HashMap<UUID, PassivePersonnage> getAllPersonnages()
 	{
 		return new HashMap<>(myPersonnages);
+	}
+	
+	/**
+	 * @return la liste des joueurs en ligne
+	 */
+	
+	public List<Joueur> getOnlinePlayers()
+	{
+		ArrayList<Joueur> players = new ArrayList<>();
+		for(PassivePersonnage pp : myPersonnages.values())
+			if(pp instanceof Joueur)
+				players.add((Joueur) pp);
+		
+		return players;
+	}
+	
+	/**
+	 * @return la liste des personnages
+	 */
+	
+	public List<Personnage> getPersonnages()
+	{
+		ArrayList<Personnage> personnages = new ArrayList<>();
+		for(PassivePersonnage pp : myPersonnages.values())
+			if(pp instanceof Personnage)
+				personnages.add((Personnage) pp);
+		
+		return personnages;
 	}
 	
 	/**
@@ -103,18 +139,23 @@ public class PersonnageManager implements Listener {
 	@EventHandler
 	public void onJoin(PlayerJoinEvent e)
 	{
-		Player p = e.getPlayer();
-		new Joueur(p);
+		new Joueur(e.getPlayer());
 	}
 	
 	@EventHandler
 	public void onQuit(PlayerQuitEvent e)
 	{
+		((Joueur) getPersonnage(e.getPlayer().getUniqueId())).disconnect();
+	}
+	
+	@EventHandler
+	public void onInteractEntity(PlayerInteractAtEntityEvent e)
+	{
 		onEvent(e.getPlayer(), e);
 	}
 	
 	@EventHandler
-	public void onInteract(PlayerInteractAtEntityEvent e)
+	public void onInteract(PlayerInteractEvent e)
 	{
 		onEvent(e.getPlayer(), e);
 	}

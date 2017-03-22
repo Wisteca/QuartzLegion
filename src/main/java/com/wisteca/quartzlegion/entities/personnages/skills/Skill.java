@@ -97,8 +97,7 @@ public interface Skill {
 		VITESSE_NAGE	  (10,     0 ,     0 ,     0 ,     10,     10,        SkillType.DIVERS,  "Augmente votre vitesse de nage.",									  			"Vitesse de nage"			),
 		ARMURE			  (10,     0 ,     0 ,     10,     0 ,     10,        SkillType.DIVERS,  "Augmente votre protection et permet de vous équiper de meilleures armures.", 	"Armure"					);
 	
-		private int myForceDep, myIntelligenceDep, myPrecisionDep, mySanteDep,
-				myEnduranceDep, myAgiliteDep;
+		private int myForceDep, myIntelligenceDep, myPrecisionDep, mySanteDep, myEnduranceDep, myAgiliteDep;
 		private SkillType myType;
 		private String myDescription, myCompleteName;
 

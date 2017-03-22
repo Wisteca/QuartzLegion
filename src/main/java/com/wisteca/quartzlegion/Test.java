@@ -3,6 +3,8 @@ package com.wisteca.quartzlegion;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -14,6 +16,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,19 +28,25 @@ import org.w3c.dom.Element;
 import com.wisteca.quartzlegion.data.Accessor;
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.PersonnageManager;
+import com.wisteca.quartzlegion.entities.personnages.Joueur;
 import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
+import com.wisteca.quartzlegion.entities.personnages.combats.Damage.DamageType;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Armor;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon;
 import com.wisteca.quartzlegion.entities.personnages.combats.equipment.Weapon.WeaponType;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.AttackPouvoir;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.OverTimePouvoir;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SkillsBuff;
 import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.SkillsBuffLauncher;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.attack.MegaDestroyer;
+import com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs.attack.PistolShoot;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.ClasseSkill;
 import com.wisteca.quartzlegion.entities.personnages.skills.Skill.HabilitySkill;
 import com.wisteca.quartzlegion.utils.ItemType;
+import com.wisteca.quartzlegion.utils.effects.Effect;
 import com.wisteca.quartzlegion.utils.effects.SphereEffect;
 
 /**
@@ -48,6 +57,22 @@ import com.wisteca.quartzlegion.utils.effects.SphereEffect;
 public class Test implements CommandExecutor {
 	
 	private SkillsBuffLauncher myLauncher;
+	private SphereEffect myEffect = (SphereEffect) Effect.getEffectByName("Gris scintillant");
+	
+	private Location myL1, myL2;
+
+	public Test()
+	{
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(MainClass.getInstance(), new Runnable() {
+			
+			@Override
+			public void run()
+			{
+				myEffect.doTime();
+			}
+			
+		}, 0, 1);
+	}
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
@@ -58,11 +83,150 @@ public class Test implements CommandExecutor {
 			return false;
 		}
 		
+		if(sender.isOp() == false)
+			return true;
+		
 		Player p = (Player) sender;
-		Personnage perso = (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId());
+		Joueur perso = (Joueur) PersonnageManager.getInstance().getPersonnage(p.getUniqueId());
 		
 		switch(args[0])
-		{
+		{		
+			case "velo" :
+				Random rand = new Random();
+				perso.setVelocity(perso.getLocation().clone().add(15 - rand.nextInt(30), 1, 15 - rand.nextInt(30)).toVector().subtract(perso.getLocation().toVector()).normalize().multiply(10));
+				break;
+			
+			case "inArea" :
+				
+				if(args[1].equals("1"))
+				{
+					myL1 = perso.getLocation();
+				}
+				
+				if(args[1].equals("2"))
+				{
+					myL2 = perso.getLocation();
+				}
+				
+				if(args[1].equals("test"))
+				{
+					Bukkit.getScheduler().scheduleSyncRepeatingTask(MainClass.getInstance(), new Runnable() {
+						
+						@Override
+						public void run()
+						{
+							Location loc = perso.getLocation();
+							if(isInside(loc, myL1, myL2))
+							{
+								perso.sendMessage("cest juste !!");
+								return;
+							}
+							
+							perso.sendMessage("NOPla");
+						}
+						
+					}, 0, 1);
+				}
+				
+				break;
+			
+			case "particle" :
+				
+				for(int i = 0 ; i < 10 ; i++)
+				{
+					Location loc = perso.getLocation().getDirection().normalize().multiply(i).toLocation(perso.getWorld()).add(perso.getLocation());
+					perso.spawnParticle(Particle.HEART, loc, 1);
+				}
+				
+				
+				break;
+			
+			case "effect" :
+				
+				myEffect.launch(perso.getLocation().add(0, 1, 0));
+				
+				break;
+			
+			case "dot" :
+				
+				OverTimePouvoir op = OverTimePouvoir.getPouvoirByName("POUVOIR DE TEST", perso);
+				op.launch();
+				
+				break;
+				
+			case "buff" :
+				
+				SkillsBuff buff = new SkillsBuff(perso, args[1].replace('_', ' '));
+				buff.launch();
+				
+				break;
+			
+			case "save" :
+				
+				perso.saveProgress();
+			
+			break;
+			
+			case "addAttack" :
+				
+				perso.setPouvoir(1, MegaDestroyer.class);
+				perso.setPouvoir(2, PistolShoot.class);
+			
+			break;
+			
+			case "setHealthScale" :
+			
+				p.setHealthScale(Double.valueOf(args[1]));
+			
+			break;
+			
+			case "setHealthScaled" :
+				
+				p.setHealthScaled(Boolean.valueOf(args[1]));
+			
+			break;
+			
+			case "getHealthScale" :
+				
+				p.sendMessage(p.getHealthScale() + "");
+			
+			break;
+			
+			case "isHealthScaled" :
+				
+				p.sendMessage(p.isHealthScaled() + "");
+			
+			break;
+			
+			case "changeHealth" :
+				
+				perso.changeHealth(Integer.valueOf(args[1]));
+				perso.sendMessage("vie : " + perso.getHealth());
+			
+			break;
+			
+			case "giveExp" :
+				
+				perso.giveExp(Integer.valueOf(args[1]));
+				
+				break;
+			
+			case "giveExpLevels" :
+				
+				perso.giveExpLevels(Integer.valueOf(args[1]));
+				
+				break;
+				
+			case "getArme" :
+				
+				Weapon ww;
+				HashMap<DamageType, int[]> damages = new HashMap<>();
+				damages.put(DamageType.BRULURE, new int[]{50, 100});
+				perso.setWeapon(0, ww = new Weapon(ItemType.IRON_PICKAXE, WeaponType.FEU, Classe.AUCUN, null, damages, null, 3, 10, 15, "ARME DU SIèCLE", "salut"));
+				perso.getInventory().addItem(ww.toItemStack());
+				
+			break;
+			
 			case "bdd" :
 				
 				Document document = null;
@@ -191,7 +355,7 @@ public class Test implements CommandExecutor {
 				
 				try {
 					
-					for(PassivePersonnage pp : PersonnageManager.getInstance().getPersonnages().values())
+					for(PassivePersonnage pp : PersonnageManager.getInstance().getAllPersonnages().values())
 						Bukkit.broadcastMessage(pp.getName());
 					
 					myLauncher = new SkillsBuffLauncher("Iron_Speed", (Personnage) PersonnageManager.getInstance().getPersonnage(p.getUniqueId()));
@@ -291,5 +455,17 @@ public class Test implements CommandExecutor {
 		}
 		
 		return true;
+	}
+	
+	public boolean isInside(Location inside, Location point1, Location point2) 
+	{
+		double x1 = Math.min(point1.getX(), point2.getX());
+		double y1 = Math.min(point1.getY(), point2.getY());
+		double z1 = Math.min(point1.getZ(), point2.getZ());
+		double x2 = Math.max(point1.getX(), point2.getX());
+		double y2 = Math.max(point1.getY(), point2.getY());
+		double z2 = Math.max(point1.getZ(), point2.getZ());
+ 
+        return inside.getX() >= x1 && inside.getX() <= x2 && inside.getY() >= y1 && inside.getY() <= y2 && inside.getZ() >= z1 && inside.getZ() <= z2;
 	}
 }

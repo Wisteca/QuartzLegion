@@ -1,7 +1,5 @@
 package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
-import org.w3c.dom.Element;
-
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 
 /**
@@ -16,11 +14,6 @@ public abstract class TargetedPouvoir extends AttackPouvoir {
 		super(attacker);
 	}
 	
-	public TargetedPouvoir(Element element)
-	{
-		super(element);
-	}
-	
 	@Override
 	public boolean launch()
 	{
@@ -32,6 +25,7 @@ public abstract class TargetedPouvoir extends AttackPouvoir {
 				return false;
 			}
 			
+			getAttacker().changeEnergy(-getEnergyCost());
 			launchOn(getAttacker().getSelectedPersonnage());
 			return true;
 		}	

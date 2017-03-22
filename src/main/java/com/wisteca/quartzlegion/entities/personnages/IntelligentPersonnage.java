@@ -20,6 +20,8 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
+import com.wisteca.quartzlegion.utils.effects.EffectInterface.Part;
+
 public class IntelligentPersonnage extends Personnage {
 
 	public IntelligentPersonnage(UUID uuid, Race race, Classe classe)
@@ -579,5 +581,26 @@ public class IntelligentPersonnage extends Personnage {
 	{
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	protected void levelChanged(int oldLevel, int levelsNumber)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void die()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Location getCurrentLocation(Part part)
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

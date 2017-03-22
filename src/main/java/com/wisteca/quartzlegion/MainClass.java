@@ -3,6 +3,7 @@ package com.wisteca.quartzlegion;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.wisteca.quartzlegion.entities.PersonnageManager;
+import com.wisteca.quartzlegion.entities.personnages.Joueur;
 
 /**
  * La classe principale du plugin.
@@ -26,7 +27,7 @@ public class MainClass extends JavaPlugin {
 			ex.printStackTrace();
 		}
 		
-		new PersonnageManager();
+		new PersonnageManager(); // création du singletone
 		
 		getCommand("test").setExecutor(new Test());
 	}
@@ -34,7 +35,8 @@ public class MainClass extends JavaPlugin {
 	@Override
 	public void onDisable()
 	{
-		
+		for(Joueur j : PersonnageManager.getInstance().getOnlinePlayers())
+			j.disconnect(); // appel de la méthode de déconnexion de chaque joueurs
 	}
 	
 	/**

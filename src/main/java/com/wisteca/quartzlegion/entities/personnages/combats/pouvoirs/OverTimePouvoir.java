@@ -3,10 +3,13 @@ package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.utils.effects.Effect;
+import com.wisteca.quartzlegion.utils.effects.EffectInterface.Part;
 
 /**
  * Représente un DOT (Damage Over Time), un pouvoir qui se déclenche tous les temps de temps.
@@ -27,41 +30,42 @@ public abstract class OverTimePouvoir extends SpacePouvoir {
 	 * @param effect l'effet de particules qui apparaîtra quand le pouvoir tourne sur le personnage
 	 */
 	
-	public OverTimePouvoir(Personnage perso, int totalTime, int betweenTime, int size, String name, Effect effect)
+	public OverTimePouvoir(Personnage perso, int totalTime, int betweenTime, int size, String name, Effect effect, Part part, int effectBetweenTime)
 	{
-		super(perso, totalTime, size, name, effect);
+		super(perso, totalTime, size, name, effect, part, effectBetweenTime);
 		myBetweenTime = betweenTime;
 		myCurrentTime = 0;
-	}
-	
-	/**
-	 * Construire un DOT en le déserializant
-	 * @param element l'élément dans lequel le pouvoir à été sérializé auparavant
-	 */
-	
-	public OverTimePouvoir(Element element)
-	{
-		super(element);
 	}
 	
 	@Override
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
 		super.serialize(toWrite);
-		((Element) toWrite.getElementsByTagName(getName().replace(' ', '_')).item(0)).setAttribute("currentTime", Integer.toString(myCurrentTime));
+		
+		Element dot = null;
+		NodeList list = toWrite.getChildNodes();
+		for(int i = 0 ; i < list.getLength() ; i++)
+			if(list.item(i).getNodeType() == Node.ELEMENT_NODE && ((Element) list.item(i)).getAttribute("name").equals(getName()))
+				dot = (Element) list.item(i);
+		
+		dot.setAttribute("currentTime", Integer.toString(myCurrentTime));
 	}
 	
 	@Override
 	public void deserialize(Element element)
 	{
-		super.deserialize(element);
-		myCurrentTime = Integer.valueOf(((Element) element.getElementsByTagName(getName().replace(' ', '_')).item(0)).getAttribute("currentTime"));
+		myCurrentTime = Integer.valueOf(element.getAttribute("currentTime"));
+		setRemainingTime(Integer.valueOf(element.getAttribute("remainingTime")));
+		// tous les autres attributs sont déjà définis par la classe fille
 	}
 	
 	@Override
 	public void doTime()
 	{
 		super.doTime();
+		
+		if(isRunning() == false)
+			return;
 		
 		if(myCurrentTime == myBetweenTime)
 		{

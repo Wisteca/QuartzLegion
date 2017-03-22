@@ -22,6 +22,21 @@ public class Damage {
 		myDamages = new HashMap<>(damages);
 	}
 	
+	public void setDamage(DamageType type, int damages)
+	{
+		myDamages.put(type, damages);
+	}
+	
+	public int getDamages(DamageType type)
+	{
+		return myDamages.get(type);
+	}
+	
+	public void addDamages(DamageType type, int damages)
+	{
+		myDamages.put(type, myDamages.get(type) + damages);
+	}
+	
 	public void setSkills(HashMap<Skill, Integer> skills)
 	{
 		mySkills = new HashMap<>(skills);

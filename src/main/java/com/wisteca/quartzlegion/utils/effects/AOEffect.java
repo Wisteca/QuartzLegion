@@ -46,11 +46,12 @@ public abstract class AOEffect implements Effect {
 	@Override
 	public void serialize(Element toWrite) throws ParserConfigurationException
 	{
-		Utils.removeElementIfExist(toWrite, myName.replace(' ', '_'));
-		Element effect = toWrite.getOwnerDocument().createElement(myName.replace(' ', '_'));
+		Utils.removeElementsWhoHasAttribute(toWrite, "name", myName);
+		Element effect = toWrite.getOwnerDocument().createElement("AOEffect");
 		toWrite.appendChild(effect);
 		
-		Utils.removeElementIfExist(toWrite, "particles");
+		effect.setAttribute("name", myName);
+		
 		Element particles = toWrite.getOwnerDocument().createElement("particles");
 		effect.appendChild(particles);
 		for(Particle pa : myParticles)
@@ -60,7 +61,7 @@ public abstract class AOEffect implements Effect {
 	@Override
 	public void deserialize(Element element)
 	{
-		myName = element.getNodeName().replace('_', ' ');
+		myName = element.getAttribute("name");
 		
 		myParticles = new ArrayList<>();
 		NodeList list = element.getElementsByTagName("particles").item(0).getChildNodes();
@@ -68,6 +69,7 @@ public abstract class AOEffect implements Effect {
 		{
 			if(list.item(i).getNodeType() != Node.ELEMENT_NODE)
 				continue;
+			
 			myParticles.add(Particle.valueOf(list.item(i).getNodeName()));
 		}
 	}
