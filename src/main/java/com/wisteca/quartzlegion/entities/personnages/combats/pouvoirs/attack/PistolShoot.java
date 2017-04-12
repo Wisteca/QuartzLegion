@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 
@@ -34,6 +35,7 @@ public class PistolShoot extends ViewTargetPouvoir {
 	@Override
 	protected void launchOn(List<Personnage> targets)
 	{
+		getAttacker().getWorld().playSound(getAttacker().getLocation(), Sound.ITEM_FIRECHARGE_USE, 1, 1);
 		Location bulletLoc = null;
 		for(double d = 1 ; d < getMaxViewDistance() ; d += 0.5)
 		{

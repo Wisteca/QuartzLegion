@@ -2,8 +2,6 @@ package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
 import java.util.UUID;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.data.Constants;
@@ -35,7 +33,7 @@ public abstract class AttackPouvoir implements OfficialPouvoir {
 	}
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		toWrite.setAttribute("name", getName());
 		toWrite.setAttribute("attacker", myAttacker.getUniqueId().toString());

@@ -1,7 +1,5 @@
 package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -38,7 +36,7 @@ public abstract class OverTimePouvoir extends SpacePouvoir {
 	}
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		super.serialize(toWrite);
 		

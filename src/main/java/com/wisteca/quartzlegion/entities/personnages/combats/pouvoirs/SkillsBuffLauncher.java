@@ -2,8 +2,6 @@ package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
 import java.util.HashMap;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.data.Constants;
@@ -122,7 +120,7 @@ public class SkillsBuffLauncher implements OfficialPouvoir {
 	}
 
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		myCurrentPouvoir.serialize(toWrite);
 	}

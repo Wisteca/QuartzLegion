@@ -1,8 +1,10 @@
 package com.wisteca.quartzlegion.utils;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -134,5 +136,56 @@ public class Utils {
 		double z2 = Math.max(point1.getZ(), point2.getZ());
  
         return inside.getX() >= x1 && inside.getX() <= x2 && inside.getY() >= y1 && inside.getY() <= y2 && inside.getZ() >= z1 && inside.getZ() <= z2;
+	}
+	
+	/**
+	 * Récupérer l'objet déclaré dans la classe donnée, par réflexion.
+	 * @param fieldName le nom du field à récupérer
+	 * @param clazz la classe dans laquelle se trouve la variable que l'on veut récupérer
+	 * @param object l'instance de la classe contenant le field, ou null si le field est déclaré statique dans la classe
+	 * @return l'objet contenu dans l'instance passée en paramètre
+	 */
+	
+	public static Object getPrivateField(String fieldName, Class<?> clazz, Object object)
+	{
+		try {
+			
+			Field field = clazz.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			return field.get(object);
+		
+		} catch(NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+			ex.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Rechercher les noms de toutes les variables contenant la classe passée en paramètre.
+	 * @param lookFor la classe dans laquelle rechercher les variables
+	 * @param findName récupérer le nom des variables déclarées par cette classe
+	 * @return une liste des noms des variables
+	 */
+	
+	public static List<String> getNamesOfFields(Class<?> lookFor, Class<?> findName)
+	{
+		List<String> list = new ArrayList<>();
+		for(Field field : lookFor.getDeclaredFields())
+		{
+			if(field.getType().equals(findName))
+				list.add(field.getName());
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * @return le nom du package NMS.
+	 */
+	
+	public static String getNMSPackage()
+	{
+		return "net.minecraft.server." + Bukkit.getServer().getClass().getPackage().getName().substring(23);
 	}
 }

@@ -21,14 +21,21 @@ import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.data.Accessor;
 import com.wisteca.quartzlegion.data.Constants;
 import com.wisteca.quartzlegion.entities.PersonnageManager;
+import com.wisteca.quartzlegion.entities.nms.registry.QuartzEntityType;
 import com.wisteca.quartzlegion.entities.personnages.Joueur;
+import com.wisteca.quartzlegion.entities.personnages.MoveableEntity;
 import com.wisteca.quartzlegion.entities.personnages.PassivePersonnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage;
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
@@ -48,13 +55,14 @@ import com.wisteca.quartzlegion.entities.personnages.skills.Skill.HabilitySkill;
 import com.wisteca.quartzlegion.utils.ItemType;
 import com.wisteca.quartzlegion.utils.effects.Effect;
 import com.wisteca.quartzlegion.utils.effects.SphereEffect;
+import com.wisteca.quartzlegion.world.WorldManager;
 
 /**
  * Classe faite n'importe comment pour divers tests, peut être modifié à tous moment, rien d'important se trouve dedans.
  * @author Wisteca
  */
 
-public class Test implements CommandExecutor {
+public class Test implements CommandExecutor, Listener {
 	
 	private SkillsBuffLauncher myLauncher;
 	private SphereEffect myEffect = (SphereEffect) Effect.getEffectByName("Gris scintillant");
@@ -63,6 +71,8 @@ public class Test implements CommandExecutor {
 
 	public Test()
 	{
+		Bukkit.getPluginManager().registerEvents(this, MainClass.getInstance());
+		
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(MainClass.getInstance(), new Runnable() {
 			
 			@Override
@@ -72,6 +82,12 @@ public class Test implements CommandExecutor {
 			}
 			
 		}, 0, 1);
+	}
+	
+	@EventHandler
+	public void onInteract(PlayerInteractEvent e)
+	{
+		e.getPlayer().sendMessage(e.getClickedBlock().getState() == null ? "null" : "pas null");
 	}
 	
 	@Override
@@ -91,6 +107,27 @@ public class Test implements CommandExecutor {
 		
 		switch(args[0])
 		{		
+			case "explosion" :
+				
+				WorldManager.getInstance().getWorld(p.getWorld()).createExplosion(p.getLocation(), 4f);
+				
+				break;
+			
+			case "minecart" :
+				
+				ArmorStand stand = (ArmorStand) p.getWorld().spawnEntity(p.getLocation().add(0, -1, 0), EntityType.ARMOR_STAND);
+				stand.setVisible(false);
+				stand.addPassenger(p);
+				
+				break;
+			
+			case "zombie" :
+				
+				MoveableEntity me = QuartzEntityType.QUARTZ_ZOMBIE.spawn(p.getLocation());
+				me.moveTo(p.getLocation().add(5, 0, 0));
+				
+				break;
+			
 			case "velo" :
 				Random rand = new Random();
 				perso.setVelocity(perso.getLocation().clone().add(15 - rand.nextInt(30), 1, 15 - rand.nextInt(30)).toVector().subtract(perso.getLocation().toVector()).normalize().multiply(10));

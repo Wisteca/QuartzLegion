@@ -1,0 +1,451 @@
+/* Méthodes bukkit */
+	
+	@Override
+	public boolean addPassenger(org.bukkit.entity.Entity entity)
+	{
+		return myBukkitZombie.addPassenger(entity);
+	}
+
+	@Override
+	public boolean addScoreboardTag(String tag)
+	{
+		return myBukkitZombie.addScoreboardTag(tag);
+	}
+
+	@Override
+	public boolean eject()
+	{
+		return myBukkitZombie.eject();
+	}
+
+	@Override
+	public int getEntityId()
+	{
+		return myBukkitZombie.getEntityId();
+	}
+
+	@Override
+	public float getFallDistance()
+	{
+		return myBukkitZombie.getFallDistance();
+	}
+
+	@Override
+	public int getFireTicks()
+	{
+		return myBukkitZombie.getFireTicks();
+	}
+
+	@Override
+	public EntityDamageEvent getLastDamageCause()
+	{
+		return myBukkitZombie.getLastDamageCause();
+	}
+
+	@Override
+	public Location getLocation()
+	{
+		return myBukkitZombie.getLocation();
+	}
+
+	@Override
+	public Location getLocation(Location loc)
+	{
+		return myBukkitZombie.getLocation(loc);
+	}
+
+	@Override
+	public List<org.bukkit.entity.Entity> getNearbyEntities(double x, double y, double z)
+	{
+		return myBukkitZombie.getNearbyEntities(x, y, z);
+	}
+
+	@Override
+	public org.bukkit.entity.Entity getPassenger()
+	{
+		return myBukkitZombie.getPassenger();
+	}
+
+	@Override
+	public List<org.bukkit.entity.Entity> getPassengers()
+	{
+		return myBukkitZombie.getPassengers();
+	}
+
+	@Override
+	public int getPortalCooldown()
+	{
+		return myBukkitZombie.getPortalCooldown();
+	}
+
+	@Override
+	public Set<String> getScoreboardTags()
+	{
+		return myBukkitZombie.getScoreboardTags();
+	}
+
+	@Override
+	public Server getServer()
+	{
+		return myBukkitZombie.getServer();
+	}
+
+	@Override
+	public int getTicksLived()
+	{
+		return myBukkitZombie.getTicksLived();
+	}
+
+	@Override
+	public EntityType getType()
+	{
+		return myBukkitZombie.getType();
+	}
+
+	@Override
+	public UUID getUniqueId()
+	{
+		return myBukkitZombie.getUniqueId();
+	}
+
+	@Override
+	public Vector getVelocity()
+	{
+		return myBukkitZombie.getVelocity();
+	}
+
+	@Override
+	public boolean hasGravity()
+	{
+		return myBukkitZombie.hasGravity();
+	}
+
+	@Override
+	public boolean isCustomNameVisible()
+	{
+		return myBukkitZombie.isCustomNameVisible();
+	}
+
+	@Override
+	public boolean isDead()
+	{
+		return myBukkitZombie.isDead();
+	}
+
+	@Override
+	public boolean isEmpty()
+	{
+		return myBukkitZombie.isEmpty();
+	}
+
+	@Override
+	public boolean isGlowing()
+	{
+		return myBukkitZombie.isGlowing();
+	}
+
+	@Override
+	public boolean isInsideVehicle()
+	{
+		return myBukkitZombie.isInsideVehicle();
+	}
+
+	@Override
+	public boolean isInvulnerable()
+	{
+		return myBukkitZombie.isInvulnerable();
+	}
+
+	@Override
+	public boolean isOnGround()
+	{
+		return myBukkitZombie.isOnGround();
+	}
+
+	@Override
+	public boolean isValid()
+	{
+		return myBukkitZombie.isValid();
+	}
+
+	@Override
+	public boolean leaveVehicle()
+	{
+		return myBukkitZombie.leaveVehicle();
+	}
+
+	@Override
+	public void playEffect(EntityEffect effect)
+	{
+		myBukkitZombie.playEffect(effect);
+	}
+
+	@Override
+	public void remove()
+	{
+		myBukkitZombie.remove();
+	}
+
+	@Override
+	public boolean removeScoreboardTag(String tag)
+	{
+		return myBukkitZombie.removeScoreboardTag(tag);
+	}
+
+	@Override
+	public void setFallDistance(float distance)
+	{
+		myBukkitZombie.setFallDistance(distance);
+	}
+
+	@Override
+	public void setFireTicks(int ticks)
+	{
+		myBukkitZombie.setFireTicks(ticks);
+	}
+
+	@Override
+	public void setGlowing(boolean glow)
+	{
+		myBukkitZombie.setGlowing(glow);
+	}
+
+	@Override
+	public void setGravity(boolean gravity)
+	{
+		myBukkitZombie.setGravity(gravity);
+	}
+
+	@Override
+	public void setLastDamageCause(EntityDamageEvent e)
+	{
+		myBukkitZombie.setLastDamageCause(e);
+	}
+
+	@Override
+	public void setPortalCooldown(int cooldown)
+	{
+		myBukkitZombie.setPortalCooldown(cooldown);
+	}
+
+	@Override
+	public void setTicksLived(int ticks)
+	{
+		myBukkitZombie.setTicksLived(ticks);
+	}
+
+	@Override
+	public void setVelocity(Vector velocity)
+	{
+		myBukkitZombie.setVelocity(velocity);
+	}
+
+	@Override
+	public Spigot spigot()
+	{
+		return myBukkitZombie.spigot();
+	}
+
+	@Override
+	public boolean teleport(Location loc)
+	{
+		return myBukkitZombie.teleport(loc);
+	}
+
+	@Override
+	public boolean teleport(Location loc, TeleportCause cause)
+	{
+		return myBukkitZombie.teleport(loc, cause);
+	}
+
+	@Override
+	public List<MetadataValue> getMetadata(String data)
+	{
+		return myBukkitZombie.getMetadata(data);
+	}
+
+	@Override
+	public boolean hasMetadata(String data)
+	{
+		return myBukkitZombie.hasMetadata(data);
+	}
+
+	@Override
+	public void removeMetadata(String data, Plugin plugin)
+	{
+		myBukkitZombie.removeMetadata(data, plugin);
+	}
+
+	@Override
+	public void setMetadata(String data, MetadataValue value)
+	{
+		myBukkitZombie.setMetadata(data, value);
+	}
+
+	@Override
+	public PermissionAttachment addAttachment(Plugin plugin)
+	{
+		return myBukkitZombie.addAttachment(plugin);
+	}
+
+	@Override
+	public PermissionAttachment addAttachment(Plugin plugin, int ticks)
+	{
+		return myBukkitZombie.addAttachment(plugin, ticks);
+	}
+
+	@Override
+	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value)
+	{
+		return myBukkitZombie.addAttachment(plugin, name, value);
+	}
+
+	@Override
+	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks)
+	{
+		return myBukkitZombie.addAttachment(plugin, name,  value, ticks);
+	}
+
+	@Override
+	public Set<PermissionAttachmentInfo> getEffectivePermissions()
+	{
+		return myBukkitZombie.getEffectivePermissions();
+	}
+
+	@Override
+	public boolean hasPermission(String permission)
+	{
+		return myBukkitZombie.hasPermission(permission);
+	}
+
+	@Override
+	public boolean hasPermission(Permission permission)
+	{
+		return myBukkitZombie.hasPermission(permission);
+	}
+
+	@Override
+	public boolean isPermissionSet(String permission)
+	{
+		return myBukkitZombie.isPermissionSet(permission);
+	}
+
+	@Override
+	public boolean isPermissionSet(Permission permission)
+	{
+		return myBukkitZombie.isPermissionSet(permission);
+	}
+
+	@Override
+	public void recalculatePermissions()
+	{
+		myBukkitZombie.recalculatePermissions();
+	}
+
+	@Override
+	public void removeAttachment(PermissionAttachment attachment)
+	{
+		myBukkitZombie.removeAttachment(attachment);
+	}
+
+	@Override
+	public boolean isOp()
+	{
+		return myBukkitZombie.isOp();
+	}
+
+	@Override
+	public void setOp(boolean op)
+	{
+		myBukkitZombie.setOp(op);
+	}
+
+	@Override
+	public boolean removePassenger(Entity passenger)
+	{
+		return myBukkitZombie.removePassenger(passenger);
+	}
+
+	@Override
+	public boolean setPassenger(Entity passenger)
+	{
+		return myBukkitZombie.setPassenger(passenger);
+	}
+
+	@Override
+	public boolean teleport(Entity entity)
+	{
+		return myBukkitZombie.teleport(entity);
+	}
+
+	@Override
+	public boolean teleport(Entity entity, TeleportCause cause)
+	{
+		return myBukkitZombie.teleport(entity, cause);
+	}
+
+	@Override
+	public void sendMessage(String message)
+	{
+		myBukkitZombie.sendMessage(message);
+	}
+
+	@Override
+	public void sendMessage(String[] messages)
+	{
+		myBukkitZombie.sendMessage(messages);
+	}
+
+	@Override
+	public int getMaxFireTicks()
+	{
+		return myBukkitZombie.getMaxFireTicks();
+	}
+
+	@Override
+	public org.bukkit.World getWorld()
+	{
+		return myBukkitZombie.getWorld();
+	}
+
+	@Override
+	public boolean isSilent()
+	{
+		return myBukkitZombie.isSilent();
+	}
+
+	@Override
+	public void setCustomNameVisible(boolean visible)
+	{
+		myBukkitZombie.setCustomNameVisible(visible);
+	}
+
+	@Override
+	public void setInvulnerable(boolean invulnerable)
+	{
+		myBukkitZombie.setInvulnerable(invulnerable);
+	}
+
+	@Override
+	public void setSilent(boolean silent)
+	{
+		myBukkitZombie.setSilent(silent);
+	}
+
+	@Override
+	public String getName()
+	{
+		return myBukkitZombie.getName();
+	}
+
+	@Override
+	public String getCustomName()
+	{
+		return myBukkitZombie.getCustomName();
+	}
+
+	@Override
+	public void setCustomName(String name)
+	{
+		myBukkitZombie.setCustomName(name);
+	}

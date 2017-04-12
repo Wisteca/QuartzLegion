@@ -72,6 +72,18 @@ public class Constants {
 	
 	public final static Document POUVOIRS_DOCUMENT = getOrCreateDocument(POUVOIRS_FILE_PATH, "pouvoirs");
 	
+	/**
+	 * Le chemin d'accès au fichier des mondes.
+	 */
+	
+	public final static String WORLD_FILE_PATH = getServerFolderPath() + "/worlds.xml";
+	
+	/**
+	 * Le document xml contenant tous les mondes et leurs zones.
+	 */
+	
+	public final static Document WORLD_DOCUMENT = getOrCreateDocument(WORLD_FILE_PATH, "worlds");
+	
 	/***********************************************************************/
 	
 	/**
@@ -85,6 +97,25 @@ public class Constants {
 	 */
 	
 	public final static int MAX_CRITICAL_LUCK = 10_000;
+	
+	/**
+	 * Le temps attendu avant chaque ajout d'énergie aux personnages.
+	 */
+	
+	public final static int ENERGY_REGEN_TIME = 360;
+	
+	/**
+	 * Le temps avant qu'un bloc soit replacé dans un endroit qui n'est pas dans une zone.
+	 * Attention : le temps est en seconde !
+	 */
+	
+	public final static int DEFAULT_REPLACE_TIME = 10;
+	
+	/**
+	 * La distance par défaut entre un bloc et un joueur pour qu'il puisse être replacé.
+	 */
+	
+	public final static int DEFAULT_REPLACE_RADIUS = 30;
 	
 	/**
 	 * Définit si le plugin va utiliser la base de données pour sauvegarder les infos des joueurs ou alors un fichier xml.

@@ -2,8 +2,6 @@ package com.wisteca.quartzlegion.entities.personnages.combats.pouvoirs;
 
 import java.util.UUID;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -110,7 +108,7 @@ public abstract class SpacePouvoir implements Pouvoir {
 	}
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		Utils.removeElementsWhoHasAttribute(toWrite, "name", myName);
 		Element pouvoir = toWrite.getOwnerDocument().createElement("pouvoir");

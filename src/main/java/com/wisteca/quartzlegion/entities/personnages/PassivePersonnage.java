@@ -2,8 +2,6 @@ package com.wisteca.quartzlegion.entities.personnages;
 
 import java.util.UUID;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
@@ -26,7 +24,7 @@ import com.wisteca.quartzlegion.utils.effects.EffectInterface.Part;
 
 public abstract class PassivePersonnage implements Entity, Serializer {
 	
-	private Weapon[] myWeapons = new Weapon[3];
+	private Weapon[] myWeapons = new Weapon[2];
 	private Armor[] myArmors = new Armor[4];
 	private Race myRace;
 	private Classe myClasse;
@@ -225,7 +223,7 @@ public abstract class PassivePersonnage implements Entity, Serializer {
 	public abstract Location getEyeLocation();
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		toWrite.setAttribute("uuid", myUniqueId.toString());
 		toWrite.setAttribute("race", myRace.toString());

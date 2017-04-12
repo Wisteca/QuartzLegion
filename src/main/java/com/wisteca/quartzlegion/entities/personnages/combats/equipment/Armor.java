@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
@@ -143,7 +141,7 @@ public class Armor extends Equipment {
 	}
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		super.serialize(toWrite);
 		

@@ -132,7 +132,7 @@ public class Joueur extends Personnage implements Player {
 	}
 
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		super.serialize(toWrite);
 	}
@@ -215,7 +215,11 @@ public class Joueur extends Personnage implements Player {
 			PlayerInteractEvent interact = (PlayerInteractEvent) e;
 			
 			if(isAttackMenuOpen())
+			{
 				interact.setCancelled(true);
+				for(int i = 0 ; i < 9 ; i++)
+					myPlayer.getInventory().getItem(i).setDurability((short) 0); 
+			}
 			
 			if(interact.getAction().equals(Action.RIGHT_CLICK_AIR) || interact.getAction().equals(Action.RIGHT_CLICK_BLOCK))
 			{
@@ -267,16 +271,10 @@ public class Joueur extends Personnage implements Player {
 	 */
 	
 	public void saveProgress()
-	{
-		try {
-			
-			sendMessage(Channel.INFO, "Sauvegarde de votre progression ...");
-			serialize(myDocument.getDocumentElement());
-			myAccess.setXML(myPlayer.getUniqueId(), myDocument.getDocumentElement());
-		
-		} catch(ParserConfigurationException ex) {
-			ex.printStackTrace();
-		}
+	{	
+		sendMessage(Channel.INFO, "Sauvegarde de votre progression ...");
+		serialize(myDocument.getDocumentElement());
+		myAccess.setXML(myPlayer.getUniqueId(), myDocument.getDocumentElement());
 	}
 	
 	/**

@@ -3,8 +3,6 @@ package com.wisteca.quartzlegion.utils.effects;
 import java.util.ArrayList;
 import java.util.Random;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.w3c.dom.Element;
@@ -58,7 +56,7 @@ public class SphereEffect extends AOEffect {
 	}
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		super.serialize(toWrite);
 

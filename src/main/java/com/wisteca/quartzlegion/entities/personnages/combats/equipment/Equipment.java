@@ -2,8 +2,6 @@ package com.wisteca.quartzlegion.entities.personnages.combats.equipment;
 
 import java.util.HashMap;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Element;
 
 import com.wisteca.quartzlegion.entities.personnages.Personnage.Classe;
@@ -217,7 +215,7 @@ public abstract class Equipment extends Item {
 	}
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		super.serialize(toWrite);
 		((Element) toWrite.getElementsByTagName("item").item(0)).removeAttribute("lore");

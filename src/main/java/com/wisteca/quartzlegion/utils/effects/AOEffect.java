@@ -2,7 +2,6 @@ package com.wisteca.quartzlegion.utils.effects;
 
 import java.util.ArrayList;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.Node;
 
 import org.bukkit.Particle;
@@ -44,7 +43,7 @@ public abstract class AOEffect implements Effect {
 	}
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		Utils.removeElementsWhoHasAttribute(toWrite, "name", myName);
 		Element effect = toWrite.getOwnerDocument().createElement("AOEffect");

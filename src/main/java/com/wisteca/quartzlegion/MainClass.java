@@ -4,6 +4,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.wisteca.quartzlegion.entities.PersonnageManager;
 import com.wisteca.quartzlegion.entities.personnages.Joueur;
+import com.wisteca.quartzlegion.world.WorldManager;
 
 /**
  * La classe principale du plugin.
@@ -22,12 +23,12 @@ public class MainClass extends JavaPlugin {
 		try {
 			
 			Class.forName("com.wisteca.quartzlegion.data.Constants"); // initialisation de la classe
+			new WorldManager("Symeria", "Horion"); // liste des mondes
+			new PersonnageManager(); // création du singletone
 			
 		} catch(ClassNotFoundException ex) {
 			ex.printStackTrace();
 		}
-		
-		new PersonnageManager(); // création du singletone
 		
 		getCommand("test").setExecutor(new Test());
 	}

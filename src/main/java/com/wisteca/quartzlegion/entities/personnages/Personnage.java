@@ -7,7 +7,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.Node;
 
 import org.w3c.dom.Element;
@@ -36,7 +35,7 @@ import com.wisteca.quartzlegion.utils.Utils;
 
 public abstract class Personnage extends PassivePersonnage {
 
-	private int myHealth, myEnergy, myLevel, myCapacity; // vie, énergie, niveau et capacité de stockage des buffs
+	private int myHealth, myEnergy, myLevel, myCapacity, myRegenTime; // vie, énergie, niveau et capacité de stockage des buffs
 	private HashMap<Skill, Integer> mySkills = new HashMap<>(); // skills de base
 	private ConcurrentLinkedQueue<SpacePouvoir> myCurrentPouvoirs = new ConcurrentLinkedQueue<>(); // pouvoirs "passifs"
 	private AttackPouvoir[] myAttackPouvoirs = new AttackPouvoir[8]; // pouvoirs d'attaque
@@ -134,12 +133,12 @@ public abstract class Personnage extends PassivePersonnage {
 	}
 	
 	/**
-	 * Sérializer un personnage dans l'élément passer en paramètre
+	 * Sérializer un personnage dans l'élément passé en paramètre
 	 * @param toWrite l'élément dans lequel le personnage devra se sérializer
 	 */
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		super.serialize(toWrite);
 		
@@ -437,6 +436,13 @@ public abstract class Personnage extends PassivePersonnage {
 		for(AttackPouvoir ap : myAttackPouvoirs)
 			if(ap != null)
 				ap.doTime();
+		
+		myRegenTime++;
+		if(myRegenTime >= Constants.ENERGY_REGEN_TIME)
+		{
+			myRegenTime = 0;
+			changeEnergy(getTemporarySkill(ClasseSkill.REGEN_ENERGIE));
+		}
 	}
 	
 	/**

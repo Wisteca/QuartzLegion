@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.Node;
 
 import org.w3c.dom.Element;
@@ -244,7 +243,7 @@ public class Weapon extends Equipment {
 	}
 	
 	@Override
-	public void serialize(Element toWrite) throws ParserConfigurationException
+	public void serialize(Element toWrite)
 	{
 		super.serialize(toWrite);
 		
